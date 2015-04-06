@@ -22,6 +22,8 @@ my %PARAMS = (
 
     MEMC_HOST       => 'localhost',
     MEMC_PORT       => 11211,
+
+    EXP_TIME        => 60 * 60 * 24,
 );
 
 our @EXPORT_OK = keys %PARAMS;

@@ -96,6 +96,8 @@
             $d.before("<br><h1>Districts list</h1>");
             $d.html("<tr><th>Id</th><th>Name</th></tr>");
             $s.html("");
+            if (!data.ok)
+                return;
             for (var i = 0; i < data.count; ++i) {
                 $s.append('<option value="' + data.districts[i].id + '">' + data.districts[i].name + '</option>');
                 $d.append('<tr>' +
@@ -113,5 +115,43 @@
 
 %= label_for districts_s => 'Select district'
 <select name="districts_s" id="dstr_sel"></select><br>
+<br>
 %= label_for companies => 'Query companies'
 %= input_tag companies => '', id => 'company_q'
+<input type="button" value="Show companies" onclick="companies()">
+<br>
+<table id="companies_table"></table>
+<br><br>
+%= label_for companies_s => 'Select company'
+<select name="companies_s" id="company_sel"></select><br>
+<br>
+
+%= javascript begin
+    function companies() {
+        var $d = $("#companies_table"),
+            $s = $("#company_sel"),
+            d = $("#dstr_sel").val(),
+            q = $("#company_q").val();
+        var qq = "";
+        if (q)
+            qq += "?q=" + q;
+        if (d)
+            qq += (qq == "" ? "?" : "&") + "district=" + d;
+
+        $.get('/cgi-bin/companies' + qq, function (data) {
+            $d.before("<br><h1>Companies list</h1>");
+            $d.html("<tr><th>District</th><th>Id</th><th>Name</th></tr>");
+            $s.html("");
+            if (!data.ok)
+                return;
+            for (var i = 0; i < data.count; ++i) {
+                $s.append('<option value="' + data.companies[i].id + '">' + data.companies[i].name + '</option>');
+                $d.append('<tr>' +
+                    '<td>' + data.companies[i].district + '</td>' +
+                    '<td>' + data.companies[i].id + '</td>' +
+                    '<td>' + data.companies[i].name + '</td></tr>');
+            }
+        });
+
+    }
+% end

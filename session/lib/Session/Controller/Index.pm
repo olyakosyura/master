@@ -47,7 +47,7 @@ sub login {
 
     my $sum = md5_hex("$r->{id}" . time . rand(100500) . "$ua");
 
-    $self->{memc}->set("session_$sum", { user_id => $r->{id}, user_agent => md5_hex($ua), role => $r->{role} }, 10 * 60);
+    $self->{memc}->set("session_$sum", { user_id => $r->{id}, user_agent => md5_hex($ua), role => $r->{role} }, EXP_TIME);
 
     return $self->render(json => { session_id => $sum });
 }
