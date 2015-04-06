@@ -1,4 +1,4 @@
-package Front::Controller::Users;
+package Data::Controller::Users;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw( encode_json );
 
@@ -8,19 +8,6 @@ use AccessDispatcher qw( send_request check_access );
 use Data::Dumper;
 
 use DB qw( :all );
-
-sub check_session {
-    my $self = shift;
-    my $r = $self->req;
-
-    my $url = $r->url;
-    $url =~ m#^/([^?]*)#;
-
-    my $res = check_access $self, method => lc($r->method), url => $1;
-    $self->render(status => 401, json => { error => 'unauthorized', description => $res->{error} }) if $res->{error};
-
-    return $res->{granted} && $res->{granted} == 1;
-}
 
 sub check_params {
     my $self = shift;
@@ -38,30 +25,6 @@ sub check_params {
 sub _i_err {
     my $self = shift;
     return $self->render(status => 500, json => { error => 'internal' });
-}
-
-sub login {
-    my $self = shift;
-
-    my $params = check_params $self, qw( login password );
-    return unless $params;
-
-    my $r = send_request($self,
-        method => 'get',
-        url => 'login',
-        port => SESSION_PORT,
-        check_session => 0,
-        args => {
-            login => $params->{login},
-            password => $params->{password},
-            user_agent => $self->req->headers->user_agent,
-        });
-
-    return _i_err $self unless $r;
-    return $self->render(status => 401, json => { error => "internal", description => "session: " . $r->{error} }) if !$r or $r->{error};
-
-    $self->session(session => $r->{session_id});
-    return $self->render(json => { ok => 1 });
 }
 
 sub add {

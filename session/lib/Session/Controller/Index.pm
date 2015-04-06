@@ -38,8 +38,6 @@ sub login {
     $self->open_memc;
     my $came = $self->req->params->to_hash;
 
-    warn Dumper $came;
-
     my ($login, $pass, $ua) = @$came{qw( login password user_agent )};
     return $self->render(json => { error => 'login or password or user_agent is not specified' }) unless $login and $pass and $ua;
 
@@ -58,7 +56,7 @@ sub logout {
     my $self = shift;
 
     $self->open_memc;
-    my $came = $self->req->json();
+    my $came = $self->req->params->to_hash;
     return $self->render(json => { error => 'session_id not specified' }) unless $came->{session_id};
 
     $self->{memc}->delete("session_$came->{session_id}");

@@ -13,7 +13,6 @@ use base qw(Exporter);
 
 our @EXPORT_OK = qw(
     check_access
-    check_session
     send_request
 );
 
@@ -36,7 +35,7 @@ my %access_control = (
 
     'register' => {
         method => 'get',
-        access => 'full',
+        access => 'Authorized',
         roles  => 'admin',
     },
 
@@ -85,10 +84,9 @@ my %access_control = (
 
 sub check_session {
     my $inst = shift;
-    my $recursion_depth = shift;
 
     my $sid = $inst->session('session');
-    return { logged => 0 } unless $sid;
+    return { logged => 0, error => 'unauthorized' } unless $sid;
 
     my $ua = $inst->req->headers->user_agent;
 
@@ -97,7 +95,6 @@ sub check_session {
         url => 'session',
         method => 'get',
         port => SESSION_PORT,
-        recursion_depth => $recursion_depth + 1,
         args => { session_id => $sid, user_agent => $ua });
 
     return { error => 'Internal: check_session' } unless $resp;
@@ -118,10 +115,8 @@ sub role_less_then {
 sub check_access {
     my $inst = shift;
     my %args = (
-        recursion_depth => 1,
         method => 'get',
         url => undef,
-        check_session => 1,
         @_,
     );
 
@@ -135,14 +130,14 @@ sub check_access {
         if $r->{method} ne 'any' and uc($r->{method}) ne uc($method);
 
     my $ret = {};
-    $ret = check_session($inst, $args{recursion_depth}) if $args{check_session};
+    $ret = check_session($inst);
     $inst->session(expires => 1) if $ret->{error};
     return $ret if $ret->{error} && $ret->{error} ne 'unauthorized';
 
     $ret->{granted} = 1;
     return $inst->app->log->debug("Access granted") && (delete($ret->{error}) || 1) && $ret if $r->{access} eq 'full';
 
-    unless (role_less_then $ret->{role}, $r->{roles}) {
+    if (defined $ret->{role} && !role_less_then $ret->{role}, $r->{roles}) {
         $ret = { error => "Not enough privileges to make request" };
     }
     if ($r->{access} !~ /^(Authorized|Partial)$/) {
@@ -150,7 +145,7 @@ sub check_access {
     }
 
     if ($ret->{error}) {
-        $inst->app->log->debug("Access denied");
+        $inst->app->log->debug("Access denied: " . $ret->{error});
         return { error => $ret->{error} };
     }
 
@@ -164,32 +159,25 @@ sub send_request {
         method => 'get',
         url => undef,
         port => undef,
-        check_session => 1,
-        recursion_depth => 1,
+        uid => undef,
+        role => undef,
         args => {},
         @_,
     );
 
     my $url = $args{url};
-    $args{check_session} = 0 if $args{url} && $args{url} eq 'session';
 
     $args{url} = "http://localhost/$args{url}" if defined $args{url};
 
     croak 'url not specified' unless $args{url};
-    croak 'max recursion depth reached' if $args{recursion_depth} > 3;
-
-    my $ret = check_access($inst,
-        url => $url,
-        map { $_ => $args{$_} } qw( method recursion_depth check_session ),
-    );
-    return $ret unless $ret->{granted};
 
     $url = Mojo::URL->new($args{url});
     $url->port($args{port}) if defined $args{port};
 
     my $ua = Mojo::UserAgent->new();
 
-    $args{args}->{uid} = $ret->{uid} unless $args{args}->{uid};
+    $args{args}->{uid} = $args{uid} if $args{uid};
+    $args{args}->{role} = $args{role} if $args{role};
 
     map { delete $args{args}->{$_} unless defined $args{args}->{$_} } keys %{$args{args}};
     $inst->app->log->debug(sprintf "Sending request [method: %s] [url: %s] [port: %d] [args: %s]",
@@ -203,7 +191,7 @@ sub send_request {
         delete  => sub { return $ua->delete(@ua_args); },
     );
 
-    my $s = $switch{$args{method}};
+    my $s = $switch{lc $args{method}};
     croak "unknown metod specified" unless defined $s;
 
     my $resp = $s->()->res->json();

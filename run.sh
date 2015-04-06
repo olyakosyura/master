@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # default configuration
-FRONT_PORT=6000
-DATA_PORT=6001
-SESSION_PORT=6002
+FRONT_PORT=7000
+DATA_PORT=7001
+SESSION_PORT=7002
+TESTS_PORT=7003
 
 . config
 
@@ -16,7 +17,7 @@ then
 fi
 
 echo -n "" > $pidsf
-for var in 'session' 'front'
+for var in 'session' 'front' 'tests' 'data'
 do
     path=$(echo -n $var | perl -ne '$_ = uc $_;  printf "\"http://127.0.0.1:\$$_%s", "_PORT\""')
     path=$(eval "echo $path")
