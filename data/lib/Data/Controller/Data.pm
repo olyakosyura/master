@@ -52,6 +52,31 @@ sub companies {
 sub buildings {
     my $self = shift;
 
+    my $args = $self->req->params->to_hash;
+    my $q = "%$args->{q}%" if $args->{q};
+    delete $args->{district} if defined $args->{company};
+
+    my $id_found = defined $args->{company} || defined $args->{district};
+
+    return $self->render(json => { status => 400, error => "invalid district" }) if defined $args->{district} && $args->{district} !~ /^\d+$/;
+    return $self->render(json => { status => 400, error => "invalid company" }) if defined $args->{company} && $args->{company} !~ /^\d+$/;
+
+    my @args = (
+        "select b.id as id, b.name as name, d.name as district, c.name as company " .
+        "from buildings b join companies c on c.id = b.company_id join districts d on d.id = c.district_id " .
+        (defined $args->{company} ? "where c.id = ? " : "") .
+        (defined $args->{district} ? "where d.id = ? " : "") .
+        (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ?" : ""),
+    );
+
+    push @args, $args->{company} || $args->{district} if $id_found;
+    push @args, $q if defined $q;
+
+    my $r = select_all $self, @args;
+
+    return return_500 $self unless $r;
+
+    return $self->render(json => { ok => 1, count => scalar @$r, buildings => $r });
 }
 
 1;

@@ -24,6 +24,6 @@ sub check_params {
 
 sub _i_err {
     my $self = shift;
-    return $self->render(status => 500, json => { error => 'internal' });
+    return $self->render(json => { status => 500, error => 'internal' });
 }
 

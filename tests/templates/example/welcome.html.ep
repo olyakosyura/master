@@ -155,3 +155,48 @@
 
     }
 % end
+
+%= label_for buildings => 'Query buildings'
+%= input_tag buildings => '', id => 'building_q'
+<input type="button" value="Show buildings" onclick="buildings()">
+<br>
+<table id="buildings_table"></table>
+<br><br>
+%= label_for buildings_s => 'Select building'
+<select name="buildings_s" id="buildings_sel"></select><br>
+<br>
+
+%= javascript begin
+    function buildings() {
+        var $d = $("#buildings_table"),
+            $b = $("#buildings_sel"),
+            c = $("#company_sel").val(),
+            d = $("#dstr_sel").val(),
+            q = $("#building_q").val();
+        var qq = "";
+        if (q)
+            qq += "?q=" + q;
+
+        if (d && !c)
+            qq += (qq == "" ? "?" : "&") + "district=" + d;
+        else if (c)
+            qq += (qq == "" ? "?" : "&") + "company=" + c;
+
+        $.get('/cgi-bin/buildings' + qq, function (data) {
+            $d.before("<br><h1>Buildings list</h1>");
+            $d.html("<tr><th>District</th><th>Company</th><th>Id</th><th>Name</th></tr>");
+            $b.html("");
+            if (!data.ok)
+                return;
+            for (var i = 0; i < data.count; ++i) {
+                $b.append('<option value="' + data.buildings[i].id + '">' + data.buildings[i].name + '</option>');
+                $d.append('<tr>' +
+                    '<td>' + data.buildings[i].district + '</td>' +
+                    '<td>' + data.buildings[i].company + '</td>' +
+                    '<td>' + data.buildings[i].id + '</td>' +
+                    '<td>' + data.buildings[i].name + '</td></tr>');
+            }
+        });
+
+    }
+% end
