@@ -160,8 +160,6 @@ sub send_request {
         url => undef,
         port => undef,
         uid => undef,
-        role => undef,
-        args => {},
         @_,
     );
 
@@ -175,9 +173,6 @@ sub send_request {
     $url->port($args{port}) if defined $args{port};
 
     my $ua = Mojo::UserAgent->new();
-
-    $args{args}->{uid} = $args{uid} if $args{uid};
-    $args{args}->{role} = $args{role} if $args{role};
 
     map { delete $args{args}->{$_} unless defined $args{args}->{$_} } keys %{$args{args}};
     $inst->app->log->debug(sprintf "Sending request [method: %s] [url: %s] [port: %d] [args: %s]",

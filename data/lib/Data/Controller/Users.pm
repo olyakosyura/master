@@ -8,24 +8,7 @@ use AccessDispatcher qw( send_request check_access );
 use Data::Dumper;
 
 use DB qw( :all );
-
-sub check_params {
-    my $self = shift;
-
-    my %params;
-    my $p = $self->req->params->to_hash;
-    for (@_) {
-        $params{$_} = $p->{$_};
-        return $self->render(status => 400, json => { error => sprintf "%s field is required", ucfirst }) && undef unless $params{$_};
-    }
-
-    return \%params;
-}
-
-sub _i_err {
-    my $self = shift;
-    return $self->render(status => 500, json => { error => 'internal' });
-}
+use Helpers qw( :all );
 
 sub add {
     my $self = shift;
@@ -48,7 +31,7 @@ sub add {
     $r = execute_query($self, "insert into users(role, login, pass, name, lastname, email) values (?, ?, ?, ?, ?, ?)",
         $role_id, @$params{qw(login password name lastname email)});
 
-    return _i_err $self unless $r;
+    return return_500 $self unless $r;
 
     $r = send_request($self,
         method => 'get',
@@ -61,7 +44,7 @@ sub add {
             user_agent => $self->req->headers->user_agent,
         });
 
-    return _i_err $self unless $r;
+    return return_500 $self unless $r;
     return $self->render(status => 401, json => { error => "internal", description => "session: " . $r->{error} }) if !$r or $r->{error};
 
     $self->session(session => $r->{session_id});
@@ -73,7 +56,16 @@ sub roles {
 
     my $r = select_all($self, "select name from roles order by name");
     return $self->render(json => { ok => 1, roles => $r, count => scalar @$r }) if $r;
-    return _i_err $self;
+    return return_500 $self;
+}
+
+sub list {
+    my $self = shift;
+
+    my $r = select_all($self, 'select r.name as role, u.login as login, u.name as name, u.lastname as lastname, u.email as email ' .
+        'from users u join roles r on r.id = u.role order by u.name');
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, users => $r });
 }
 
 1;

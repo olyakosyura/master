@@ -13,6 +13,7 @@
         $.get('/cgi-bin/roles', function (data) {
             if (!data.ok)
                 return;
+            $s.html('');
             for (var i = 0; i < data.count; ++i) {
                 $s.append('<option value="' + data.roles[i].name + '">' + data.roles[i].name + '</option>');
             }
@@ -51,6 +52,24 @@
             pass = $("#pass").val();
         $.ajax({ method: 'get', 'url': '/cgi-bin/login', data: { login: login, password: pass }, success: show });
     }
+
+    function list_users() {
+        var $t = $("#users_table");
+        $.get('/cgi-bin/users_list', function(data) {
+            if (!data.ok)
+                return;
+            $t.before("<br><h1>Users list</h1>");
+            $t.html("<tr><th>Name</th><th>Lastname</th><th>Login</th><th>Role</th><th>Email</th></tr>");
+            for (var i = 0; i < data.count; ++i) {
+                $t.append('<tr>' +
+                    '<td>' + data.users[i].name + '</td>' +
+                    '<td>' + data.users[i].lastname+ '</td>' +
+                    '<td>' + data.users[i].login + '</td>' +
+                    '<td>' + data.users[i].role + '</td>' +
+                    '<td>' + data.users[i].email + '</td></tr>');
+            }
+        });
+    }
 % end
 
 <input type="button" value="Register" onclick="register()">
@@ -58,3 +77,7 @@
 <input type="button" value="Login" onclick="login()">
 <br>
 <input type="button" value="Logout" onclick="$.get('/cgi-bin/logout', show)">
+<br>
+<input type="button" value="List users" onclick="list_users()">
+<br>
+<table id="users_table"></table>

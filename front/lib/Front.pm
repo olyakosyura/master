@@ -42,7 +42,7 @@ sub startup {
             });
 
         return _i_err $self unless $r;
-        return $self->render(status => 401, json => { error => "internal", description => "session: " . $r->{error} }) if !$r or $r->{error};
+        return $self->render(status => 401, json => { error => "internal", description => $r->{error} }) if !$r or $r->{error};
 
         $self->session(session => $r->{session_id}, expires => 0);
         return $self->render(json => { ok => 1 });
@@ -89,8 +89,6 @@ sub startup {
             url => $page_name,
             port => DATA_PORT,
             args => $self->req->params->to_hash,
-            uid => $self->stash('uid'),
-            role => $self->stash('role'),
         );
 
         return $self->render(status => 500, json => { error => 'internal' }) unless $response;
