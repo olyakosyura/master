@@ -1,5 +1,5 @@
 -- MySQL Workbench Synchronization
--- Generated: 2015-04-05 17:46
+-- Generated: 2015-04-06 13:49
 -- Model: New Model
 -- Version: 1.0
 -- Project: Name of the project
@@ -32,7 +32,7 @@ DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `apek-energo`.`roles` (
-  `id` INT(11) NOT NULL,
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
@@ -77,8 +77,20 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_general_ci;
 
-ALTER TABLE `apek-energo`.`roles` 
-CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT ;
+CREATE TABLE IF NOT EXISTS `apek-energo`.`access_control` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `origin` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_general_ci;
+
+INSERT INTO `apek-energo`.`roles` (`name`)
+VALUES
+	(`admin`),
+	(`manager`),
+	(`user`);
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
