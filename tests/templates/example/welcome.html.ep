@@ -81,3 +81,37 @@
 <input type="button" value="List users" onclick="list_users()">
 <br>
 <table id="users_table"></table>
+<br><br>
+
+%= label_for districts => 'Query districts'
+%= input_tag districts => '', id => 'districts_q'
+%= javascript begin
+    function districts() {
+        var $d = $("#districts_table"),
+            $s = $("#dstr_sel"),
+            q = $("#districts_q").val();
+        if (q)
+            q = "?q=" + q;
+        $.get('/cgi-bin/districts' + q, function (data) {
+            $d.before("<br><h1>Districts list</h1>");
+            $d.html("<tr><th>Id</th><th>Name</th></tr>");
+            $s.html("");
+            for (var i = 0; i < data.count; ++i) {
+                $s.append('<option value="' + data.districts[i].id + '">' + data.districts[i].name + '</option>');
+                $d.append('<tr>' +
+                    '<td>' + data.districts[i].id + '</td>' +
+                    '<td>' + data.districts[i].name + '</td></tr>');
+            }
+        });
+    }
+% end
+
+<input type="button" value="Show districts" onclick="districts()">
+<br>
+<table id="districts_table"></table>
+<br><br>
+
+%= label_for districts_s => 'Select district'
+<select name="districts_s" id="dstr_sel"></select><br>
+%= label_for companies => 'Query companies'
+%= input_tag companies => '', id => 'company_q'
