@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     select_all
     execute_query
     last_err
+    last_id
 );
 
 our %EXPORT_TAGS = (
@@ -59,6 +60,12 @@ sub execute_query {
     my ($ctl, $query, @args) = @_;
     $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', @args));
     return $dbh->do($query, undef, @args) or ($ctl->app->log->warn($dbh->errstr) and undef);
+}
+
+sub last_id {
+    my $ctl = shift;
+    my $row = select_row $ctl, 'select last_insert_id() as id';
+    return $row && $row->{id};
 }
 
 1;

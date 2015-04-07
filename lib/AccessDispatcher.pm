@@ -5,6 +5,7 @@ use warnings;
 
 use Carp qw(croak);
 use Mojo::UserAgent;
+use Mojo::Util qw( url_escape );
 use Data::Dumper::OneLine;
 
 use MainConfig qw( :all );
@@ -73,6 +74,12 @@ my %access_control = (
         method => 'get',
         access => 'Authorized',
         roles  => 'user',
+    },
+
+    'xls/add_buildings' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
     },
 
     'session' => {
@@ -160,6 +167,7 @@ sub send_request {
         url => undef,
         port => undef,
         uid => undef,
+        data => undef,
         @_,
     );
 
@@ -178,7 +186,11 @@ sub send_request {
     $inst->app->log->debug(sprintf "Sending request [method: %s] [url: %s] [port: %d] [args: %s]",
         uc($args{method}), $args{url}, $args{port}, Dumper $args{args});
 
-    my @ua_args = ($url => json => $args{args});
+    if ($args{args}) {
+        $url->query($args{args});
+    }
+
+    my @ua_args = ($url => { 'Content-Type' => $inst->req->headers->content_type } => $args{data});
     my %switch = (
         get => sub { $url->query(%{$args{args}}); return $ua->get($url); },
         post    => sub { return $ua->post(@ua_args); },

@@ -200,3 +200,27 @@
 
     }
 % end
+
+<form method="post" id="fileinfo" name="fileinfo" onsubmit="return buildings_upload();">
+<label>Select a buildings file:</label><br>
+<input type="file" name="file" id="filename" required />
+<input type="submit" value="Upload buildings" />
+</form>
+
+%= javascript begin
+    function buildings_upload() {
+        var fd = new FormData(document.getElementById("fileinfo"));
+
+        $.ajax({
+          url: "/cgi-bin/xls/add_buildings",
+          type: "POST",
+          data: fd,
+          enctype: 'multipart/form-data',
+          processData: false,
+          contentType: false,
+        }).done(function( data ) {
+            console.log( data );
+        });
+        return false;
+    }
+% end

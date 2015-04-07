@@ -4,6 +4,12 @@ use Mojo::Base 'Mojolicious';
 use MainConfig qw( :all );
 use AccessDispatcher qw( check_access send_request );
 
+use File::Temp;
+use Data::Dumper;
+
+use Mojo::JSON qw(decode_json encode_json);
+use utf8;
+
 sub check_params {
     my $self = shift;
 
@@ -80,22 +86,64 @@ sub startup {
         return $self->render(status => 400, json => { error => "invalid", description => $r->{error} });
     });
 
+    $auth->post('/xls/:method' => sub {
+        my $self = shift;
+        my $fh = File::Temp->new(UNLINK => 0);
+
+        my $upload = $self->req->upload('file');
+
+        my %expected_headers = map { $_ => 1 } qw (
+            vnd.ms-excel
+            msexcel
+            x-msexcel
+            x-ms-excel
+            x-excel
+            x-dos_ms_excel
+            xls
+            x-xls
+            vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        );
+
+        if ($upload->headers->content_type !~ m#application/(\S+)#i || not defined $expected_headers{lc $1}) {
+            return $self->render(status => 400, json => { error => 'bad request', description => 'unexpected content type' });
+        }
+
+        $self->req->upload('file')->move_to($fh->filename);
+
+        my $response = send_request($self,
+            method => $self->req->method,
+            url => $self->stash('method'),
+            port => DATA_PORT,
+            args => { filename => $fh->filename },
+        );
+        return $self->render(status => 500, json => { error => 'internal' }) unless $response;
+
+        my $status = $response->{status} || 200;
+        delete $response->{status};
+        return $self->render(status => $status, json => $response);
+    });
+
     $auth->any('/*any' => { any => '' } => sub {
         my $self = shift;
         my $page_name = $self->param('any');
+
+        $self->app->log->debug(length $self->req->body);
 
         my $response = send_request($self,
             method => $self->req->method,
             url => $page_name,
             port => DATA_PORT,
             args => $self->req->params->to_hash,
+            data => $self->req->body,
         );
 
         return $self->render(status => 500, json => { error => 'internal' }) unless $response;
 
         my $status = $response->{status} || 200;
         delete $response->{status};
-        return $self->render(status => $status, json => $response);
+        my $v = encode_json($response);
+        utf8::decode($v);
+        return $self->render(status => $status, data => $v, format => 'json');
     });
 }
 
