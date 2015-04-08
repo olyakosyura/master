@@ -26,6 +26,7 @@ sub startup {
 
     $r->get('/build')->to('results#build');
     $r->post('/add_buildings')->to('results#add_buildings');
+    $r->post('/add_content')->to('results#add_content');
 }
 
 1;

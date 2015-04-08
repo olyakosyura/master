@@ -82,6 +82,12 @@ my %access_control = (
         roles => 'manager',
     },
 
+    'xls/add_content' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
+    },
+
     'session' => {
         method => 'any',
         access => 'full',
@@ -130,7 +136,7 @@ sub check_access {
     my ($url, $method) = @args{qw( url method )};
     $inst->app->log->debug("Check access for url '$url', method '$method'");
 
-    return { error => "Can't find access rules for $url" } unless defined $access_control{$url};
+    return { error => 'not found', description => "Can't find access rules for $url", status => 404 } unless defined $access_control{$url};
 
     my $r = $access_control{$url};
     return { error => "Unsupported request method for $url" }
@@ -201,9 +207,11 @@ sub send_request {
     my $s = $switch{lc $args{method}};
     croak "unknown metod specified" unless defined $s;
 
-    my $resp = $s->()->res->json();
+    my $r = $s->()->res;
+    my $resp = $r->json;
     unless (defined $resp) {
         $inst->app->log->warn("Response is undefined");
+        $resp = { status => $r->code, error => 'response is unknown', description => $r->message };
     } else {
         $inst->app->log->debug("Response: " . Dumper($resp));
     }

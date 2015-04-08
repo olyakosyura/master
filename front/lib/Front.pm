@@ -62,6 +62,12 @@ sub startup {
         $url =~ m#^/([^?]*)#;
 
         my $res = check_access $self, method => lc($r->method), url => $1;
+        if (defined $res->{status} && defined $res->{error}) {
+            my $s = $res->{status};
+            delete $res->{status};
+            return $self->render(status => $s, json => $res) && undef;
+        }
+
         return $self->render(status => 401, json => { error => 'unauthorized', description => $res->{error} }) && undef if $res->{error};
 
         $self->stash(uid => $res->{uid}, role => $res->{role});
@@ -102,9 +108,11 @@ sub startup {
             xls
             x-xls
             vnd.openxmlformats-officedocument.spreadsheetml.sheet
+            octet-stream
         );
 
         if ($upload->headers->content_type !~ m#application/(\S+)#i || not defined $expected_headers{lc $1}) {
+            $self->app->log->warn("Unexpected content type given: " . $upload->headers->content_type);
             return $self->render(status => 400, json => { error => 'bad request', description => 'unexpected content type' });
         }
 

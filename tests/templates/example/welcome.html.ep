@@ -201,25 +201,31 @@
     }
 % end
 
-<form method="post" id="fileinfo" name="fileinfo" onsubmit="return buildings_upload();">
+<form method="post" id="add_buildings" name="fileinfo" onsubmit="return upload('add_buildings');">
 <label>Select a buildings file:</label><br>
 <input type="file" name="file" id="filename" required />
 <input type="submit" value="Upload buildings" />
 </form>
 
+<form method="post" id="add_content" name="fileinfo" onsubmit="return upload('add_content');">
+<label>Select a content file:</label><br>
+<input type="file" name="file" id="filename" required />
+<input type="submit" value="Upload content" />
+</form>
+
 %= javascript begin
-    function buildings_upload() {
-        var fd = new FormData(document.getElementById("fileinfo"));
+    function upload(url) {
+        var fd = new FormData(document.getElementById(url));
 
         $.ajax({
-          url: "/cgi-bin/xls/add_buildings",
+          url: "/cgi-bin/xls/" + url,
           type: "POST",
           data: fd,
           enctype: 'multipart/form-data',
           processData: false,
           contentType: false,
         }).done(function( data ) {
-            console.log( data );
+            alert(JSON.stringify(data));
         });
         return false;
     }
