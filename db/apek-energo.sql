@@ -1,5 +1,5 @@
 -- MySQL Workbench Synchronization
--- Generated: 2015-04-08 03:16
+-- Generated: 2015-04-10 02:54
 -- Model: New Model
 -- Version: 1.0
 -- Project: Name of the project
@@ -82,7 +82,9 @@ COLLATE = utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `apek-energo`.`categories` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(256) NOT NULL DEFAULT '',
+  `object_name` VARCHAR(512) NOT NULL DEFAULT '',
+  `category_name` VARCHAR(256) NULL DEFAULT NULL,
+  `usage_limit` VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
@@ -96,20 +98,14 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`objects` (
   `install_year` INT(11) NOT NULL DEFAULT 2000,
   `reconstruction_year` INT(11) NOT NULL DEFAULT 2000,
   `cost` INT(11) NOT NULL DEFAULT 0,
-  `category` INT(11) NOT NULL,
-  `normal_usage_limit` INT(11) NOT NULL DEFAULT 0,
-  `usage_limit` INT(11) NOT NULL DEFAULT 0,
-  `amortisation_per_year` FLOAT(11) NOT NULL DEFAULT 0.0,
-  `amortisation` FLOAT(11) NOT NULL DEFAULT 0.0,
+  `object_name` INT(11) NOT NULL,
   `building` INT(11) NOT NULL,
   `characteristic` INT(11) NOT NULL,
-  `object_name` INT(11) NOT NULL,
   INDEX `fk_objects_isolations1_idx` (`isolation` ASC),
   INDEX `fk_objects_laying_methods1_idx` (`laying_method` ASC),
-  INDEX `fk_objects_categories1_idx` (`category` ASC),
+  INDEX `fk_objects_categories1_idx` (`object_name` ASC),
   INDEX `fk_objects_buildings1_idx` (`building` ASC),
   INDEX `fk_objects_characteristics1_idx` (`characteristic` ASC),
-  INDEX `fk_objects_objects_names1_idx` (`object_name` ASC),
   CONSTRAINT `fk_objects_isolations1`
     FOREIGN KEY (`isolation`)
     REFERENCES `apek-energo`.`isolations` (`id`)
@@ -121,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`objects` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_objects_categories1`
-    FOREIGN KEY (`category`)
+    FOREIGN KEY (`object_name`)
     REFERENCES `apek-energo`.`categories` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
@@ -133,11 +129,6 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`objects` (
   CONSTRAINT `fk_objects_characteristics1`
     FOREIGN KEY (`characteristic`)
     REFERENCES `apek-energo`.`characteristics` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_objects_objects_names1`
-    FOREIGN KEY (`object_name`)
-    REFERENCES `apek-energo`.`objects_names` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -167,19 +158,6 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`characteristics` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_general_ci;
-
-CREATE TABLE IF NOT EXISTS `apek-energo`.`objects_names` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(512) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_general_ci;
-
-USE `apek-energo`;
-
-INSERT INTO `roles`(`name`) values ('admin'), ('manager'), ('user');
-INSERT INTO `users`(`role`, `login`, `pass`, `name`) values (1, 'admin', 'admin', 'admin');
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
