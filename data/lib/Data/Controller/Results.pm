@@ -264,6 +264,44 @@ sub add_buildings {
     return $self->render(json => { ok => 1, errors => { count => scalar @errors, errors => \@errors } });
 }
 
+sub add_categories {
+    my $self = shift;
+
+    my $args = $self->req->params->to_hash;
+    return $self->render(json => { status => 400, error => "file not found" }) unless $args->{filename} or not -f $args->{filename};
+
+    my ($parser, $error) = parser $self, $args->{filename};
+    return $self->render(json => { status => 400, error => $error }) if $error;
+
+    my %fields = (
+        0 => 'object_name',
+        1 => 'category_name',
+        2 => 'usage_limit',
+    );
+
+    my @keys = sort keys %fields;
+    my $q = 'insert into categories (' . join(',', @fields{@keys}) . ') values (' . join(',', map { '?' } @keys) . ')';
+
+    my $rows = 0;
+    my @errors;
+    for my $sheet ($parser->worksheets) {
+        $parser->set_worksheet($sheet);
+        my ($min_r, $max_r) = $parser->row_range;
+
+        for my $row ($min_r + 1 .. $max_r) { # Skip first line
+            my $e = -1;
+            my @data = map { $parser->cell($row, $_) || ($e = $_) } @keys;
+            if ($e > -1) {
+                push @errors, { row => $row, "Cell $_ is empty" };
+            } else {
+                ++$rows;
+                execute_query($self, $q, @data);
+            }
+        }
+    }
+    return $self->render(json => { ok => 1, count => $rows, errors => \@errors });
+}
+
 sub add_content {
     my $self = shift;
     my $args = $self->req->params->to_hash;

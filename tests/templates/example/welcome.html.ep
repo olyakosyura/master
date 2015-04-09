@@ -213,6 +213,12 @@
 <input type="submit" value="Upload content" />
 </form>
 
+<form method="post" id="add_categories" name="fileinfo" onsubmit="return upload('add_categories');">
+<label>Select a categories file:</label><br>
+<input type="file" name="file" id="filename" required />
+<input type="submit" value="Upload content" />
+</form>
+
 %= javascript begin
     function upload(url) {
         var fd = new FormData(document.getElementById(url));
