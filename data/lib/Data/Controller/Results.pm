@@ -185,8 +185,6 @@ sub add_buildings {
             my ($line_no, $cur_id, @line) = @_;
             my $name = $line[1];
             my $district = $line[7];
-            utf8::decode($name);
-            utf8::decode($district);
 
             unless ($districts->{$district}) {
                 execute_query($self, 'insert into districts(name) values (?)', $district);
@@ -252,7 +250,6 @@ sub add_buildings {
                 my $ref = $fields{$col};
                 my $v = ((defined $ref->{callback} ? $ref->{callback}->($row, $col, @cells) : $cells[$col]) || $ref->{default});
 
-                utf8::decode($v);
                 push @content, $v;
             }
 

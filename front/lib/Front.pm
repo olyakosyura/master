@@ -8,7 +8,6 @@ use File::Temp;
 use Data::Dumper;
 
 use Mojo::JSON qw(decode_json encode_json);
-use utf8;
 
 sub check_params {
     my $self = shift;
@@ -150,7 +149,6 @@ sub startup {
         my $status = $response->{status} || 200;
         delete $response->{status};
         my $v = encode_json($response);
-        utf8::decode($v);
         return $self->render(status => $status, data => $v, format => 'json');
     });
 }

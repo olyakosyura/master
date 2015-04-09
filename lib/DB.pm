@@ -31,8 +31,9 @@ BEGIN {
         {
             AutoCommit => 1,
             RaiseError => 1,
+            mysql_enable_utf8 => 1,
         }
-    ) or croak "Can't connect to 'test' database: " . DBI::errstr();
+    ) or croak "Can't connect to '" . DB_NAME . "' database: " . DBI::errstr();
 }
 
 sub last_err {
