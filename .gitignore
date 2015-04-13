@@ -5,3 +5,5 @@
 *~
 config
 *.bak
+xlsx/*
+tmp/*
