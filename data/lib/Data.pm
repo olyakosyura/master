@@ -28,6 +28,7 @@ sub startup {
     $r->post('/add_buildings')->to('results#add_buildings');
     $r->post('/add_categories')->to('results#add_categories');
     $r->post('/add_content')->to('results#add_content');
+    $r->post('/add_buildings_meta')->to('results#add_buildings_meta');
 }
 
 1;

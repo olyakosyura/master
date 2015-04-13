@@ -6,4 +6,10 @@ sub index {
   $self->render(template => 'base/index');
 }
 
+sub upload {
+    my $self = shift;
+    $self->app->log->debug("sdglkjsdlgkjsdlkgj");
+    $self->render(template => 'base/upload');
+}
+
 1;

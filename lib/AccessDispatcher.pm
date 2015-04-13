@@ -89,6 +89,12 @@ my %access_control = (
         roles => 'manager',
     },
 
+    'xls/add_buildings_meta' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
+    },
+
     'xls/add_categories' => {
         method => 'post',
         access => 'Authorized',

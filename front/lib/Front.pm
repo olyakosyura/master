@@ -40,6 +40,7 @@ sub startup {
     });
 
     $auth->get('/')->to("builder#index");
+    $auth->get('/upload')->to("builder#upload");
 }
 
 1;

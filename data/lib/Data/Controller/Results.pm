@@ -212,16 +212,20 @@ sub add_buildings {
 
     my $sql_fields = join ',', map { $fields{$_}->{sql_name} } sort keys %fields;
     my $sql_placeholders = '(' . join(',', map { '?' } (1 .. scalar keys %fields)) . ')';
-    my $lines_per_req = int(100 / scalar keys %fields);
+    my $lines_per_req = 1;
     my @content;
 
     my $sql_line = 0;
+    my $count = 0;
     my $_exec = sub {
         my $force = shift;
         ++$sql_line unless $force;
+        ++$count unless $force;
         if (($force && $sql_line > 1) || $sql_line >= $lines_per_req) {
-            execute_query($self, "insert into buildings ($sql_fields) values " .
-                join(',', map { $sql_placeholders } (1 .. $sql_line)), @content);
+            eval {
+                execute_query($self, "insert into buildings ($sql_fields) values " .
+                    join(',', map { $sql_placeholders } (1 .. $sql_line)), @content);
+            } or push(@errors, { line => $count, error => "$@", }); # XXX: Can't trunslate error
             @content = ();
             $sql_line = 0;
         }
@@ -266,7 +270,7 @@ sub add_buildings {
 
     $_exec->(1);
 
-    return $self->render(json => { ok => 1, errors => { count => scalar @errors, errors => \@errors } });
+    return $self->render(json => { ok => 1, count => $count, errors => { count => scalar @errors, errors => \@errors } });
 }
 
 sub add_categories {
@@ -284,14 +288,11 @@ sub add_categories {
     my %fields = (
         0 => 'object_name',
         1 => 'category_name',
-        2 => 'usage_limit',
     );
 
     my @keys = sort keys %fields;
     my $q = 'insert into categories (' . join(',', @fields{@keys}) . ') values (' . join(',', map { '?' } @keys) . ')';
     my %categories = map { $_->{object_name} => $_->{id} } @{ select_all $self, 'select object_name, id from categories' };
-
-    warn Dumper \%categories;
 
     my $rows = 0;
     my @errors;
@@ -303,16 +304,84 @@ sub add_categories {
             my $e = -1;
             my @data = map { $parser->cell($row, $_) || ($e = $_) } @keys;
             if ($e > -1) {
-                push @errors, { row => $row, error => "Cell $e is empty" };
+                push @errors, { line => $row, error => "Cell $e is empty" };
             } elsif (defined $categories{$data[0]}) {
-                push @errors, { row => $row, error => "Category $data[0] already exists" };
+                push @errors, { line => $row, error => "Category $data[0] already exists" };
             } else {
                 ++$rows;
                 execute_query($self, $q, @data);
             }
         }
     }
-    return $self->render(json => { ok => 1, count => $rows, errors => \@errors });
+    return $self->render(json => { ok => 1, count => $rows, errors => { count => scalar @errors, errors => \@errors, }, });
+}
+
+sub add_buildings_meta {
+    my $self = shift;
+
+    my $args = $self->req->params->to_hash;
+
+    my ($parser, $error) = parser $self, $args->{filename};
+    return $self->render(json => { status => 400, error => $error }) if $error;
+
+    return $self->render(json => { status => 400, error => "Too many sheets found in document, maximum 1" })
+        if scalar $parser->worksheets() > 1;
+
+    my %buildings = map { $_->{id} => 1 } @{ select_all $self, "select id from buildings" };
+    my %existed = map { $_->{id} => 1 } @{ select_all $self, "select building_id as id from buildings_meta" };
+
+    my @errors;
+    my %fields = (
+        0 => { sql_name => 'building_id', action => sub {
+            my ($val, $row) = @_;
+            unless ($buildings{$val}) {
+                push @errors, { line => $row, error => "Buildings $val not found in database" };
+                return undef;
+            }
+            if (defined $existed{$val}) {
+                push @errors, { line => $row, error => "Building $val already found in buildings_meta" };
+                return undef;
+            }
+            return $val;
+        }},
+        2 => { sql_name => 'characteristic', },
+        3 => { sql_name => 'build_date', },
+        4 => { sql_name => 'reconstruction_date', },
+        5 => { sql_name => 'heat_load', },
+        6 => { sql_name => 'cost', action => sub {
+            my $v = shift;
+            $v =~ s/[\s,]*//g;
+            return $v;
+        }},
+    );
+
+    my ($sheet) = $parser->worksheets;
+    $parser->set_worksheet($sheet);
+
+    my @keys = sort keys %fields;
+    my $q = "insert into buildings_meta (" . (join ',', map { $fields{$_}->{sql_name} } @keys) .
+        ") values (" . (join ',', map { '?' } @keys) . ')';
+
+    my $count = 0;
+    my ($min_r, $max_r) = $parser->row_range;
+    for my $row ($min_r + 1 .. $max_r) {
+        my @data;
+        my $e = 1;
+        for my $k (@keys) {
+            my $v = $parser->cell($row, $k);
+            if ($fields{$k}->{action}) {
+                $v = $fields{$k}->{action}->($v, $row);
+                last unless $e = defined $v;
+            }
+            push @data, $v;
+        }
+
+        next unless $e;
+        execute_query $self, $q, @data;
+        ++$count;
+    }
+
+    return $self->render(json => { count => $count, ok => 1, errors => { count => scalar @errors, errors => \@errors } });
 }
 
 sub add_content {
