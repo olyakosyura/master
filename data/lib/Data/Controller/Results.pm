@@ -136,7 +136,6 @@ use warnings;
 use utf8;
 
 use Mojo::Base 'Mojolicious::Controller';
-use Mojo::JSON qw( encode_json );
 
 use MainConfig qw( :all );
 use AccessDispatcher qw( send_request check_access );

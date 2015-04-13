@@ -1,0 +1,85 @@
+% layout 'index';
+
+<!-- report-request-form -->
+<div class="report-request-form">
+    <h3>Форма запроса отчета</h3>
+    <form>
+      <!--  -->
+      <label for="region">Регион</label>
+      <div>
+        <select name="region" id="region">
+          <option>Выберете регион</option>
+          <option value="1">point 1</option>
+          <option value="2">point 2</option>
+          <option value="3">point 3</option>
+          <option value="4">point 4</option>
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="area">Округ/район</label>
+      <div>
+        <select name="area" id="area">
+          <option>Выберете округ или район</option>
+          <option value="1">point 1</option>
+          <option value="2">point 2</option>
+          <option value="3">point 3</option>
+          <option value="4">point 4</option>
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="organization">Организация</label>
+      <div>
+        <select name="organization" id="organization">
+          <option>Выберете организацию</option>
+          <option value="1">point 1</option>
+          <option value="2">point 2</option>
+          <option value="3">point 3</option>
+          <option value="4">point 4</option>
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="address">Адрес</label>
+      <div>
+        <select name="address" id="address">
+          <option>Выберете адрес</option>
+          <option value="1">point 1</option>
+          <option value="2">point 2</option>
+          <option value="3">point 3</option>
+          <option value="4">point 4</option>
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="engineering-unit">Инженерный узел</label>
+      <div>
+        <select name="engineering-unit" id="engineering-unit">
+          <option>Выберете тип объекта</option>
+          <option value="1">point 1</option>
+          <option value="2">point 2</option>
+          <option value="3">point 3</option>
+          <option value="4">point 4</option>
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="type-of-expenditure">Вид расходов</label>
+      <div>
+        <select name="type-of-expenditure" id="type-of-expenditure">
+          <option>Определить показатель</option>
+          <option value="1">point 1</option>
+          <option value="2">point 2</option>
+          <option value="3">point 3</option>
+          <option value="4">point 4</option>
+        </select>
+      </div>
+      <!-- / -->
+      <p class="row-button">
+          <a href="main.html">Сформировать</a>
+      </p>
+    </form>
+</div>
+<!-- /report-request-form -->
+

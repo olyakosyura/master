@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name = "format-detection" content = "telephone=no" />
+<title></title>
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen">
+<!--script-->
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<!--[if lt IE 9]>
+    <script type="text/javascript" src="js/html5.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/ie.css">    
+<![endif]-->
+</head>
+<body>
+<div class="main-part intro">  
+  <!--===============================header===============================-->
+   <header>
+       <!-- logo -->
+        <div class="logo">
+            <img src="images/logo.png" alt="">
+        </div>
+       <!-- /logo -->       
+   </header>
+  <!--===============================content===============================-->
+  <section class="intro-sign-in">
+     <article>
+            <h6>АВТОРИЗИРУЙТЕСЬ ПОЖАЛУЙТА</h6>
+            <!-- TODO: Fix error form -->
+            <div id="frm-error">
+            </div>
+            <form id="frm-login">
+                <div class="row-input">
+                    <div class="col-right">
+                        <label for="intro-password" id="intro-password">Пароль</label>
+                        <input name="intro-password" type="password">
+                    </div>
+                    <div class="col-left">
+                        <label for="intro-login" id="intro-login">Логин</label>
+                        <input name="intro-login" type="text">
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    function login() {
+                        var $frm = $("#frm-login"),
+                            $err = $("#frm-error"),
+                            login = $frm.find("[name=intro-login]").val(),
+                            pass = $frm.find("[name=intro-password]").val();
+
+                        if (login == "") { // TODO: Trim spaces
+                            $err.text("Login field is required!");
+                            return;
+                        }
+                        if (pass == "") {
+                            $err.text("Password field is required!");
+                            return;
+                        }
+
+                        $.ajax({
+                                method: 'get',
+                                url: "<%= $general_url %>/cgi-bin/login",
+                                data: {
+                                    login: login,
+                                    password: pass,
+                                },
+                                success: function (data) {
+                                    window.location.href = "<%= $general_url %>/";
+                                },
+                                error: function (data) {
+                                    if (data && data.description) {
+                                        $err.text(data.description);
+                                    } else {
+                                        $err.text("Invalid login or password"); // Maybe set "internal server error" ?
+                                    }
+                                },
+                            });
+                        return;
+                    }
+                </script>
+                <div class="row-button">
+                    <a href="#" onclick="login(); return false;">ВОЙТИ</a>
+                </div>
+            </form>
+     </article>
+     <!--=============/box-themes=============-->
+  </section>
+  <!--===============================/content==============================-->
+</div>
+<!--===============================/footer==============================-->
+<footer>
+    <p><span>&copy;</span> 2015 &laquo;Аудит Предприятий Энергетического Комплекса&raquo;</p>
+    <a title="ВЕСНА" href="#"><img src="images/springtime.png" alt=""></a>
+</footer>
+</body>
+</html>

@@ -13,6 +13,7 @@ my %PARAMS = (
     FRONT_PORT      => 6000,
     DATA_PORT       => 6001,
     SESSION_PORT    => 6002,
+    LOGIC_PORT      => 6003,
 
     DB_HOST         => 'localhost',
     DB_PORT         => 3306,
@@ -22,6 +23,8 @@ my %PARAMS = (
 
     MEMC_HOST       => 'localhost',
     MEMC_PORT       => 11211,
+
+    GENERAL_URL     => '',
 
     EXP_TIME        => 60 * 60 * 24,
 );
@@ -37,8 +40,7 @@ my %CFG;
 
 open my $f, '<', $path or croak "Can't open $path: $!\n";
 while (<$f>) {
-    /(\w*)\s*=\s*(.*)/;
-    $CFG{$1} = $2;
+    $CFG{$1} = $2 if /(\w*)\s*=\s*(.*)/;
 }
 
 close $f;
@@ -46,7 +48,12 @@ close $f;
 sub make_sub {
     my ($sub_name) = @_;
     local $@;
-    eval "sub $sub_name() { return \$CFG{$sub_name} || \$PARAMS{$sub_name} || croak \"Can't locate $sub_name in config\\n\"; }";
+    eval <<SUB;
+        sub $sub_name() {
+            croak "Can't locate $sub_name in config\\n" unless defined(\$CFG{$sub_name} || \$PARAMS{$sub_name});
+            return \$CFG{$sub_name} || \$PARAMS{$sub_name};
+        }
+SUB
     croak "Can't make subs: $@\n" if $@;
 }
 

@@ -15,6 +15,7 @@ use base qw(Exporter);
 our @EXPORT_OK = qw(
     check_access
     send_request
+    check_session
 );
 
 our %EXPORT_TAGS = (
@@ -99,6 +100,12 @@ my %access_control = (
         access => 'full',
         roles  => 'user',
     },
+
+    'about' => {
+        method => 'get',
+        access => 'full',
+        roles => 'user',
+    },
 );
 
 sub check_session {
@@ -116,8 +123,8 @@ sub check_session {
         port => SESSION_PORT,
         args => { session_id => $sid, user_agent => $ua });
 
-    return { error => 'Internal: check_session' } unless $resp;
-    return { error => $resp->{error} } if defined $resp->{error};
+    return { error => 'Internal: check_session', status => 500 } unless $resp;
+    return { error => $resp->{error}, status => ($resp->{status} || 500) } if defined $resp->{error};
 
     return { logged => 1, uid => $resp->{uid}, role => $resp->{role} };
 }

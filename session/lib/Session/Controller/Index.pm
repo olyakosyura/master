@@ -32,6 +32,24 @@ sub check_session {
     return $self->render(json => { ok => 1, uid => $r->{user_id}, role => $r->{role} });
 }
 
+sub about {
+    my $self = shift;
+    $self->open_memc;
+
+    return $self->render(json => { error => 'session_id not specified' }) unless $self->param('session_id');
+    return $self->render(json => { error => 'user_agent not specified' }) unless $self->param('user_agent');
+
+    my $r = $self->{memc}->get('session_' . $self->param('session_id'));
+    return $self->render(json => { error => 'unauthorized' })
+        unless $r and $r->{user_id} and ($r->{user_agent} eq md5_hex($self->param('user_agent')));
+
+    $r = select_row($self, 'select u.id as uid, u.name as name, u.lastname as lastname, u.login as login, u.email as email, ' .
+        'r.name as role from users u join roles r on r.id = u.role where u.id = ?', $r->{user_id});
+
+    return $self->render(json => { status => 500, error => 'db' }) unless $r;
+    return $self->render(json => $r);
+}
+
 sub login {
     my $self = shift;
 

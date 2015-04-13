@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name = "format-detection" content = "telephone=no" />
+<title></title>
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen">
+<!--script-->
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+<!--form-->
+<script type="text/javascript" src="js/jquery.formstyler.min.js"></script>
+<!--[if lt IE 9]>
+    <script type="text/javascript" src="js/html5.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/ie.css">
+<![endif]-->
+</head>
+<body>
+<div class="main-part">
+  <!--===============================header===============================-->
+   <header>
+       <!-- logo -->
+        <div class="logo">
+            <img src="images/logo.png" alt="">
+        </div>
+       <!-- /logo -->
+       <!-- data-box -->
+       <div class="data-box">
+          <div>
+              <ul>
+                <li>
+                  Всего объектов
+                  <b>1470</b>
+                </li>
+                <script type='application/javascript'>
+                    function logout() {
+                        var f = function () {
+                            window.location.href = '<%= $general_url %>/';
+                        };
+                        $.ajax({
+                            method: 'get',
+                            url: '<%= $general_url %>/cgi-bin/logout',
+                            success: f,
+                            error: f,
+                        });
+                    }
+                </script>
+                <li><a href="#" onclick="logout(); return false;"><span>выход</span></a></li>
+              </ul>
+          </div>
+          <b><%= ucfirst($lastname || '') . ' ' . ucfirst($name || '') %></b>
+       </div>
+       <!-- /data-box -->
+   </header>
+  <!--===============================content===============================-->
+  <section class="content">
+     <article>
+       <!-- edit-data -->
+        <div class="edit-data">
+            <h2><a href="#"><span></span></a>Редактировать данные</h2>
+            <nav>
+              <ul>
+                <li><a href="#">
+                  <em></em>
+                  <span>Справочники</span>
+                </a></li>
+                <li><a href="#">
+                  <em></em>
+                  <span>Таблицы смет</span>
+                </a></li>
+                <li><a href="#">
+                    <em></em>
+                    <span>Таблица<br  />пользователей</span>
+                </a></li>
+                <li><a href="#">
+                    <em></em>
+                    <span>Данные<br  />Инженерных узлов</span>
+                </a></li>
+              </ul>
+            </nav>
+        </div>
+       <!-- edit-data -->
+       <%= content %> <!-- code will be inserted here -->
+       <!-- about-service -->
+       <div class="about-service">
+          <h4><a href="#"><span></span></a>О сервисе</h4>
+          <div>
+              <h5>Добро пожаловать</h5>
+              <p>Отвергает именно кто возжаждал восхваляющих потому из презирает: примером если тех бы картину нас некоей, что  немалое что. Это стремящегося предаваться из-за наслаждений наслаждение умеет стремящегося ни само никого когда стал простейшим избегал отвергает говорил вами что такие нет раскрою жизни то никаких.</p>
+              <ul>
+                <li>Отвергает именно кто </li>
+                <li>Возжаждал восхваляющих потому из презирает</li>
+                <li>Примером если тех бы картину </li>
+                <li>Наслаждений наслаждение умеет стремящегося ни само </li>
+              </ul>
+          </div>
+       </div>
+       <!-- /about-service -->
+     </article>
+     <!--=============/box-themes=============-->
+  </section>
+  <!--===============================/content==============================-->
+</div>
+<!--===============================/footer==============================-->
+<footer>
+    <p>&copy;2015 &laquo;Аудит Предприятий Энергетического Комплекса&raquo;</p>
+    <a title="ВЕСНА" href="#"><img src="images/springtime.png" alt=""></a>
+</footer>
+</body>
+</html>
