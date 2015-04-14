@@ -159,6 +159,15 @@ sub parser {
     return (undef, "Can't create parser: " . $parser->last_error);
 }
 
+sub prepare_int {
+    my $v = shift;
+    return 0 unless $v;
+    $v =~ /([\d.]+)(%)?/;
+    $v = $1;
+    $v *= 100 unless $2;
+    return $v;
+}
+
 sub add_buildings {
     my $self = shift;
 
@@ -309,7 +318,7 @@ sub add_categories {
                 push @errors, { line => $row, error => "Category $data[0] already exists" };
             } else {
                 ++$rows;
-                execute_query($self, $q, @data);
+                execute_query($self, $q, map { s/^\s+//; s/\s+$//; } @data);
             }
         }
     }
@@ -348,11 +357,7 @@ sub add_buildings_meta {
         3 => { sql_name => 'build_date', },
         4 => { sql_name => 'reconstruction_date', },
         5 => { sql_name => 'heat_load', },
-        6 => { sql_name => 'cost', action => sub {
-            my $v = shift;
-            $v =~ s/[\s,]*//g;
-            return $v;
-        }},
+        6 => { sql_name => 'cost', action => \&prepare_int },
     );
 
     my ($sheet) = $parser->worksheets;
@@ -391,12 +396,14 @@ sub add_content {
     my ($parser, $error) = parser $self, $args->{filename};
     return $self->render(json => { status => 400, error => $error }) if $error;
 
-    #return $self->render(json => { status => 400, error => "Too many sheets found in document, maximum 1" })
-    #    if scalar $parser->worksheets() > 1; TODO FIXME !!!
+    return $self->render(json => { status => 400, error => "Too many sheets found in document, maximum 1" })
+        if scalar $parser->worksheets() > 1;
+
+    my ($sheet) = $parser->worksheets;
+    $parser->set_worksheet($sheet);
 
     my $have_data = 0;
 
-    my $building_id;
     my %content = map {
         my $t = $_;
         $t => { map { $_->{name} => $_->{id} } @{ select_all $self, "select name, id from $t" } }
@@ -414,70 +421,72 @@ sub add_content {
 
     my @errors;
     my %categories = map { $_->{object_name} => $_->{id} } @{ select_all $self, 'select object_name, id from categories' };
+    my %buildings = map { $_->{id} => 1 } @{ select_all $self, "select id from buildings" };
 
     my %actions = (
         1  => { sql_name => 'building', callback => sub {
-            my ($row, $v) = @_;
-            return $building_id unless $v;
-            $building_id = int($v);
-            return $building_id;
+            my $v = shift;
+            return undef unless defined $v;
+            unless (defined $buildings{$v}) {
+                push @errors, { line => shift, error => "Building id '$v' is unknown" };
+                return undef;
+            }
+            return $v;
         }},
-        14 => { callback => sub {
-            my ($row, $v) = @_;
-            return undef unless $v;
-            $v =~ s/,//g;
-            execute_query($self, 'update buildings set cost = ? where id = ?', int($v), $building_id) if defined $building_id;
-            return undef;
-        }},
-        4  => { sql_name => 'object_name', callback => sub {
-            my ($row, $v) = @_;
-            return undef unless $v;
+        5  => { sql_name => 'object_name', callback => sub {
+            my $v = shift;
+            utf8::decode($v);
+            if ($v) {
+                $v =~ s/^\s+//;
+                $v =~ s/\s+$//;
+            }
             return $categories{$v} if defined $categories{$v};
-            push @errors, { row => $row, error => "Category $v not found in database (skip)" };
+            push @errors, { line => shift, error => "Category '$v' not found in database" };
             return undef;
         }},
-        6  => { sql_name => 'characteristic', callback => sub { $add_n_get->('characteristics', $_[1]); }},
-        7  => { sql_name => 'length', },
-        8  => { sql_name => 'size', },
-        9  => { sql_name => 'isolation', callback => sub { $add_n_get->('isolations', $_[1]); }},
-        10 => { sql_name => 'laying_method', callback => sub { $add_n_get->('laying_methods', $_[1]); }},
-        11 => { sql_name => 'install_year', },
-        12 => { sql_name => 'reconstruction_year', },
-        13 => { sql_name => 'cost', callback => sub { my ($row, $v) = @_; $v =~ s/,//g if $v; return $v; }},
+        6  => { sql_name => 'characteristic', callback => sub { $add_n_get->('characteristics', shift); }},
+        7  => { sql_name => 'characteristic_value', callback => \&prepare_int, },
+        8  => { sql_name => 'size', callback => \&prepare_int },
+        9  => { sql_name => 'isolation', callback => sub { $add_n_get->('isolations', shift); }},
+        10 => { sql_name => 'laying_method', callback => sub { $add_n_get->('laying_methods', shift); }},
+        11 => { sql_name => 'install_year', callback => \&prepare_int, },
+        12 => { sql_name => 'reconstruction_year', callback => \&prepare_int, },
+        14 => { sql_name => 'wear', callback => sub {
+            my $v = shift;
+            return 0 unless $v;
+            $v =~ /([\d.]+)(%)?/;
+            $v = $1 || 0;
+            $v *= 100 unless $2;
+            return $v;
+        }},
+        15 => { sql_name => 'cost', callback => \&prepare_int },
     );
 
-    my @fields_order = sort grep { $actions{$_}->{sql_name} } keys %actions;
-
-    my $sql_fields_count = 0;
-    my $fields_names = join ',', map { ++$sql_fields_count; $_->{sql_name} || () } @actions{@fields_order};
-    my $qqq = join ',', map { '?' } 1 .. $sql_fields_count;
+    my @fields_order = sort keys %actions;
+    my $fields_names = join ',', map { $actions{$_}->{sql_name} || () } @fields_order;
+    my $qqq = join ',', map { '?' } 1 .. scalar @fields_order;
 
     my $rows = 0;
-    for my $sheet ($parser->worksheets) {
-        next unless $sheet->{Name} eq 'амортизация';
-        $parser->set_worksheet($sheet);
-        my ($min_r, $max_r) = $parser->row_range;
+    my ($min_r, $max_r) = $parser->row_range;
 
-        for my $row ($min_r + 2 .. $max_r) {                    # skip first 2 rows
-            my @query;
-            my $old_building_id = $building_id || -1;
-            for my $col (@fields_order) {
-                my $r = $parser->cell($row, $col);
-                my $ref = $actions{$col};
-                if (defined $ref->{callback}) {
-                    $r = $ref->{callback}->($row, $r);
-                }
-                next unless $r;
-                push @query, $r;
+    for my $row ($min_r .. $max_r) {                    # skip first row
+        next if $parser->cell($row, 0);
+
+        my @query;
+        my $e = 1;
+        for my $col (@fields_order) {
+            my $r = $parser->cell($row, $col);
+            my $ref = $actions{$col};
+            if (defined $ref->{callback}) {
+                $r = $ref->{callback}->($r, $row);
+                last unless $e = defined $r;
             }
-            if (scalar @query == scalar @fields_order) {
-                execute_query $self, "insert into objects($fields_names) values ($qqq)", @query;
-                ++$rows;
-            } elsif ($building_id == $old_building_id) {
-                push @errors, { line => $row, error => "Invalaid items count found in row: " .
-                    (scalar @query) . ". " . (scalar @fields_order) . " expected" };
-            }
+            push @query, $r;
         }
+        next unless $e;
+
+        execute_query $self, "insert into objects($fields_names) values ($qqq)", @query;
+        ++$rows;
     }
 
     return $self->render(json => { ok => 1, count => $rows, errors => { count => scalar @errors, errors => \@errors } });
