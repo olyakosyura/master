@@ -46,6 +46,9 @@ sub about {
     $r = select_row($self, 'select u.id as uid, u.name as name, u.lastname as lastname, u.login as login, u.email as email, ' .
         'r.name as role from users u join roles r on r.id = u.role where u.id = ?', $r->{user_id});
 
+    my $objects_count = select_row($self, "select count(id) as count from objects");
+    $r->{objects_count} = $objects_count->{count};
+
     return $self->render(json => { status => 500, error => 'db' }) unless $r;
     return $self->render(json => $r);
 }

@@ -33,14 +33,20 @@ sub startup {
         }
 
         $self->stash(general_url => GENERAL_URL);
-        return $self->render(template => 'base/login') && undef if $res->{error};
+        return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
 
-        $self->stash(%$res); # login name lastname role uid email
+        $self->stash(%$res); # login name lastname role uid email objects_count
         return 1;
     });
 
-    $auth->get('/')->to("builder#index");
-    $auth->get('/upload')->to("builder#upload");
+    $self->routes->get('/login')->to(cb => sub {
+        my $self = shift;
+        $self->stash(general_url => GENERAL_URL);
+        $self->render(template => 'base/login');
+    });
+
+    $auth->get('/')->to(cb => sub { shift->render(template => 'base/index'); });
+    $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
 }
 
 1;

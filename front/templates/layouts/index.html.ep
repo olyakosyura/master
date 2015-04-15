@@ -30,7 +30,7 @@
               <ul>
                 <li>
                   Всего объектов
-                  <b>1470</b>
+                  <b><%= $objects_count %></b>
                 </li>
                 <script type='application/javascript'>
                     function logout() {
