@@ -59,7 +59,7 @@ sub select_all {
 
 sub execute_query {
     my ($ctl, $query, @args) = @_;
-    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', @args));
+    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { defined $_ ? $_ : "undef" } @args));
     return $dbh->do($query, undef, @args) or ($ctl->app->log->warn($dbh->errstr) and undef);
 }
 

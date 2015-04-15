@@ -186,6 +186,8 @@ sub add_buildings {
     my $companies = select_all $self, 'select c.id as id, c.name as name, d.name as district ' .
         'from companies c join districts d on d.id = c.district_id';
 
+    my %buildings = map { $_->{id} => 1 } @{ select_all $self, "select id from buildings" };
+
     for (@$companies) {
         $districts->{$_->{district}}->{companies}->{$_->{name}} = $_->{id};
     }
@@ -194,7 +196,18 @@ sub add_buildings {
     my $fields_count = 8; # ;(
 
     my %fields = (
-        0 => { sql_name => 'id', default => 0 },
+        0 => { sql_name => 'id', callback => sub {
+            my ($line_no, $cur_id, @line) = @_;
+            my $cell = $line[0];
+
+            if ($buildings{$cell}) {
+                push @errors, { line => $line_no, error => "building id $cell is already exists in db" };
+                return undef;
+            }
+
+            $buildings{$cell} = 1;
+            return $cell;
+        }},
         1 => { sql_name => 'company_id', callback => sub {
             my ($line_no, $cur_id, @line) = @_;
             my $name = $line[1];
@@ -231,10 +244,8 @@ sub add_buildings {
         ++$sql_line unless $force;
         ++$count unless $force;
         if (($force && $sql_line > 1) || $sql_line >= $lines_per_req) {
-            eval {
-                execute_query($self, "insert into buildings ($sql_fields) values " .
-                    join(',', map { $sql_placeholders } (1 .. $sql_line)), @content);
-            } or push(@errors, { line => $count, error => "$@", }); # XXX: Can't trunslate error
+            execute_query($self, "insert into buildings ($sql_fields) values " .
+                join(',', map { $sql_placeholders } (1 .. $sql_line)), @content);
             @content = ();
             $sql_line = 0;
         }
@@ -262,15 +273,23 @@ sub add_buildings {
             next unless $id;
 
             my @cells = map { $parser->cell($row, $_) } $min_c .. $max_c;
+            my @new_content;
             for my $col ($min_c .. $max_c) {
                 next unless defined $fields{$col};
 
                 my $ref = $fields{$col};
                 my $v = ((defined $ref->{callback} ? $ref->{callback}->($row, $col, @cells) : $cells[$col]) || $ref->{default});
 
-                push @content, $v;
+                unless (defined $v) {
+                    @new_content = ();
+                    last;
+                }
+                push @new_content, $v;
             }
 
+            next unless @new_content;
+
+            push @content, @new_content;
             $_exec->();
         }
     }
@@ -301,7 +320,8 @@ sub add_categories {
 
     my @keys = sort keys %fields;
     my $q = 'insert into categories (' . join(',', @fields{@keys}) . ') values (' . join(',', map { '?' } @keys) . ')';
-    my %categories = map { $_->{object_name} => $_->{id} } @{ select_all $self, 'select object_name, id from categories' };
+    my %categories = map { my $v = $_->{object_name}; utf8::decode($v); $v => $_->{id} }
+        @{ select_all $self, 'select object_name, id from categories' };
 
     my $rows = 0;
     my @errors;
@@ -312,13 +332,14 @@ sub add_categories {
         for my $row ($min_r + 1 .. $max_r) { # Skip first line
             my $e = -1;
             my @data = map { $parser->cell($row, $_) || ($e = $_) } @keys;
+            utf8::decode($data[0]);
             if ($e > -1) {
                 push @errors, { line => $row, error => "Cell $e is empty" };
             } elsif (defined $categories{$data[0]}) {
                 push @errors, { line => $row, error => "Category $data[0] already exists" };
             } else {
                 ++$rows;
-                execute_query($self, $q, map { s/^\s+//; s/\s+$//; } @data);
+                execute_query($self, $q, @data);
             }
         }
     }
@@ -422,7 +443,9 @@ sub add_content {
     my @errors;
     my %categories = map { $_->{object_name} => $_->{id} } @{ select_all $self, 'select object_name, id from categories' };
     my %buildings = map { $_->{id} => 1 } @{ select_all $self, "select id from buildings" };
+    my %existed_objects = map { $_->{id} => 1 } @{ select_all $self, "select distinct building as id from objects" };
 
+    my $deleted = 0;
     my %actions = (
         1  => { sql_name => 'building', callback => sub {
             my $v = shift;
@@ -430,6 +453,12 @@ sub add_content {
             unless (defined $buildings{$v}) {
                 push @errors, { line => shift, error => "Building id '$v' is unknown" };
                 return undef;
+            }
+            if ($existed_objects{$v}) {
+                my $r = execute_query $self, "delete from objects where building = ?", $v;
+                push @errors, { line => shift, error => "Objects for building $v was replaced" };
+                $deleted += $r || 1;
+                delete $existed_objects{$v};
             }
             return $v;
         }},
@@ -489,7 +518,7 @@ sub add_content {
         ++$rows;
     }
 
-    return $self->render(json => { ok => 1, count => $rows, errors => { count => scalar @errors, errors => \@errors } });
+    return $self->render(json => { ok => 1, count => $rows, deleted => $deleted, errors => { count => scalar @errors, errors => \@errors } });
 }
 
 1;
