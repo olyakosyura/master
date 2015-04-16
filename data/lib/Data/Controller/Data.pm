@@ -17,7 +17,7 @@ sub districts {
     my $q = defined $args && $args->{q} || undef;
     $q = "%$q%" if $q;
 
-    my @args = ($self, "select id, name from districts" . (defined $q ? " where name like ? order by name" : ""));
+    my @args = ($self, "select id, name, region from districts" . (defined $q ? " where name like ? order by name" : ""));
     push @args, $q if defined $q;
     my $r = select_all @args;
 
@@ -104,6 +104,14 @@ sub objects {
 
     return return_500 $self unless $r;
     return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
+}
+
+sub calc_types {
+    my $self = shift;
+
+    my $r = select_all $self, "select id, name from calc_types";
+    return $self->render(json => { ok => 1, count => scalar @$r, types => $r });
+
 }
 
 1;

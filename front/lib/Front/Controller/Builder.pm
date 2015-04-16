@@ -12,6 +12,12 @@ sub index {
         port => DATA_PORT,
     );
 
+    my $c = send_request($self,
+        url => 'calc_types',
+        port => DATA_PORT,
+    );
+
+    $self->stash(calc_types => $c);
     $self->stash(districts => $r);
     $self->render(template => 'base/index');
 }
