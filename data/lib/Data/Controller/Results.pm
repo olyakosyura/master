@@ -163,9 +163,9 @@ sub parser {
 }
 
 sub prepare_int {
+    return shift;
     my $v = shift;
-    return 0 unless $v;
-    $v =~ /([\d.]+)(%)?/;
+    return 0 if not($v) or $v !~ /([\d.]+)(%)?/;
     $v = $1;
     $v *= 100 unless $2;
     return $v;
@@ -431,7 +431,7 @@ sub add_content {
     my %content = map {
         my $t = $_;
         $t => { map { $_->{name} => $_->{id} } @{ select_all $self, "select name, id from $t" } }
-    } qw( laying_methods isolations characteristics );
+    } qw( laying_methods isolations characteristics objects_subtypes );
 
     my $add_n_get = sub {
         my ($table_name, $v) = @_;
@@ -491,7 +491,9 @@ sub add_content {
             $v *= 100 unless $2;
             return $v;
         }},
-        15 => { sql_name => 'cost', callback => \&prepare_int },
+        37 => { sql_name => 'cost', callback => \&prepare_int },
+        39 => { sql_name => 'last_usage_limit', callback => \&prepare_int },
+        41 => { sql_name => 'objects_subtype', callback => sub { $add_n_get->('objects_subtypes', shift); }},
     );
 
     my @fields_order = sort keys %actions;
@@ -512,7 +514,7 @@ sub add_content {
             if (defined $ref->{callback}) {
                 $r = $ref->{callback}->($r, $row);
 
-                unless (defined $r && !$ref->{required}) {
+                if (not(defined $r) && $ref->{required}) {
                     $e = 0;
                     last;
                 }

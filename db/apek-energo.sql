@@ -1,5 +1,5 @@
 -- MySQL Workbench Synchronization
--- Generated: 2015-04-14 03:47
+-- Generated: 2015-04-16 22:43
 -- Model: New Model
 -- Version: 1.0
 -- Project: Name of the project
@@ -33,7 +33,7 @@ COLLATE = utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `apek-energo`.`roles` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NULL DEFAULT NULL,
+  `name` VARCHAR(45)  DEFAULT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
@@ -90,23 +90,26 @@ COLLATE = utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `apek-energo`.`objects` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `size` INT(11) NULL DEFAULT 0,
-  `isolation` INT(11) NOT NULL,
-  `laying_method` INT(11) NOT NULL,
-  `install_year` INT(11) NULL DEFAULT 2000,
+  `size` INT(11) NOT NULL DEFAULT 0,
+  `isolation` INT(11)  DEFAULT NULL,
+  `laying_method` INT(11) DEFAULT NULL,
+  `install_year` INT(11) NOT NULL DEFAULT 2000,
   `reconstruction_year` INT(11) NULL DEFAULT 2000,
-  `cost` INT(11) NULL DEFAULT 0,
+  `cost` INT(11) NOT NULL DEFAULT 0,
   `object_name` INT(11) NOT NULL,
   `building` INT(11) NOT NULL,
-  `characteristic` INT(11) NOT NULL,
-  `characteristic_value` DOUBLE NULL DEFAULT 0.0,
-  `wear` FLOAT(11) NULL DEFAULT 0.0,
+  `characteristic` INT(11)  DEFAULT NULL,
+  `characteristic_value` DOUBLE NOT NULL DEFAULT 0.0,
+  `wear` FLOAT(11) NOT NULL DEFAULT 0.0,
+  `last_usage_limit` INT(2) NOT NULL DEFAULT 0,
+  `objects_subtype` INT(11)  DEFAULT NULL,
   INDEX `fk_objects_isolations1_idx` (`isolation` ASC),
   INDEX `fk_objects_laying_methods1_idx` (`laying_method` ASC),
   INDEX `fk_objects_categories1_idx` (`object_name` ASC),
   INDEX `fk_objects_buildings1_idx` (`building` ASC),
   INDEX `fk_objects_characteristics1_idx` (`characteristic` ASC),
   PRIMARY KEY (`id`),
+  INDEX `fk_objects_objects_subtypes1_idx` (`objects_subtype` ASC),
   CONSTRAINT `fk_objects_isolations1`
     FOREIGN KEY (`isolation`)
     REFERENCES `apek-energo`.`isolations` (`id`)
@@ -130,6 +133,11 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`objects` (
   CONSTRAINT `fk_objects_characteristics1`
     FOREIGN KEY (`characteristic`)
     REFERENCES `apek-energo`.`characteristics` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_objects_objects_subtypes1`
+    FOREIGN KEY (`objects_subtype`)
+    REFERENCES `apek-energo`.`objects_subtypes` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -165,8 +173,8 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`buildings_meta` (
   `building_id` INT(11) NOT NULL,
   `characteristic` ENUM('ТВ','ТПЭ','ТП','ТВО','ЦТП') NOT NULL DEFAULT 'ТВ',
   `build_date` INT(2) NOT NULL DEFAULT 1800,
-  `reconstruction_date` INT(2) NULL DEFAULT NULL,
-  `heat_load` FLOAT(11) NULL DEFAULT NULL,
+  `reconstruction_date` INT(2)  DEFAULT NULL,
+  `heat_load` FLOAT(11)  DEFAULT NULL,
   `cost` DOUBLE NOT NULL DEFAULT 0.0,
   INDEX `fk_buildings_meta_buildings1_idx` (`building_id` ASC),
   CONSTRAINT `fk_buildings_meta_buildings1`
@@ -174,6 +182,14 @@ CREATE TABLE IF NOT EXISTS `apek-energo`.`buildings_meta` (
     REFERENCES `apek-energo`.`buildings` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `apek-energo`.`objects_subtypes` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(512) NOT NULL,
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_general_ci;
