@@ -32,6 +32,7 @@ BEGIN {
             AutoCommit => 1,
             RaiseError => 1,
             mysql_enable_utf8 => 1,
+            mysql_auto_reconnect => 1,
         }
     ) or croak "Can't connect to '" . DB_NAME . "' database: " . DBI::errstr();
 }
