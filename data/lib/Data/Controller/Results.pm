@@ -163,11 +163,8 @@ sub parser {
 }
 
 sub prepare_int {
-    return shift;
     my $v = shift;
-    return 0 if not($v) or $v !~ /([\d.]+)(%)?/;
-    $v = $1;
-    $v *= 100 unless $2;
+    $v =~ s/,//g if $v;
     return $v;
 }
 
