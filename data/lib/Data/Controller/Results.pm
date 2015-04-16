@@ -140,6 +140,9 @@ use Mojo::Base 'Mojolicious::Controller';
 use MainConfig qw( :all );
 use AccessDispatcher qw( send_request check_access );
 
+use Excel::Writer::XLSX;
+use File::Temp;
+
 use Data::Dumper;
 
 use DB qw( :all );
@@ -519,6 +522,20 @@ sub add_content {
     }
 
     return $self->render(json => { ok => 1, count => $rows, deleted => $deleted, errors => { count => scalar @errors, errors => \@errors } });
+}
+
+sub build {
+    my $self = shift;
+
+    my $f = File::Temp->new(UNLINK => 0);
+    print { $f } "HELLO!";
+
+    return $self->render(json => { filename => $f->filename });
+
+    my $workbook = Excel::Writer::XLSX->new($f->filename);
+    my $worksheet = $workbook->add_worksheet();
+
+
 }
 
 1;

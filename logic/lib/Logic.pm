@@ -28,7 +28,10 @@ sub startup {
 
     # Documentation browser under "/perldoc"
     $self->plugin('PODRenderer');
+    $self->plugin('RenderFile');
     $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
+
+    $self->app->types->type(xlsx => 'application/vnd.ms-excel');
 
     $self->routes->get('/login' => sub {
         my $self = shift;
@@ -148,6 +151,14 @@ sub startup {
 
         my $status = $response->{status} || 200;
         delete $response->{status};
+
+        if ($page_name eq 'build' && $response->{filename}) {
+            $self->render_file(filepath => $response->{filename}, filename => 'report.xlsx', format => 'xlsx');
+            $self->rendered(200);
+            unlink $response->{filename};
+            return 1;
+        }
+
         my $v = encode_json($response);
         return $self->render(status => $status, data => $v, format => 'json');
     });

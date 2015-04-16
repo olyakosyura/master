@@ -1,11 +1,14 @@
 % layout 'index';
 
 %= javascript begin
-    var choosen_object = undefined;
+    var choosen_object = undefined,
+        err_msg = function () { alert('Ошибка получения списка. Попробуйте повторить запрос позднее или обратитесь к администратору.'); };
+    function request_content() {
+        window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(choosen_object), '_blank');
+    }
     $(function () {
         var elements = ['districts', 'companies', 'buildings', 'objects'],
-            elements_info = { districts: 'district', companies: 'company', buildings: 'building', },
-            err_msg = function () { alert('Ошибка получения списка. Попробуйте повторить запрос позднее или обратитесь к администратору.'); };
+            elements_info = { districts: 'district', companies: 'company', buildings: 'building', objects: 'object' };
         for (var el = 0; el < elements.length; ++el) {
             var $next_elem = el == elements.length - 1 ? undefined : $("#" + elements[el + 1]);
             $("#" + elements[el]).on('change', function ($next_elem) {
@@ -15,7 +18,14 @@
                     choosen_object = {};
                     choosen_object[elements_info[$(this).attr('id')]] = this.value;
                     if ($next_elem) {
-                        $next_elem.val('-1').html($next_elem.find('option')[0]);
+                        var index = $.inArray($next_elem.attr('id'), elements);
+                        if (index >= 0) {
+                            for (var i = index + 1; i < elements.length; ++i) {
+                                var $e = $("#" + elements[i]);
+                                $e.val('-1').html($e.find('option')[0]).trigger('refresh');
+                            }
+                        }
+                        $next_elem.val('-1').html($next_elem.find('option')[0]).trigger('refresh');
                         $.ajax({
                             method: 'get',
                             url: '<%= $general_url %>/cgi-bin/' + $next_elem.attr('id'),
@@ -26,6 +36,7 @@
                                     $.each(data[key], function (index, item) {
                                         $next_elem.append('<option value="' + item.id + '">' + item.name + '</option>');
                                     });
+                                    $next_elem.trigger('refresh');
                                 } else {
                                     err_msg();
                                 }
@@ -94,7 +105,7 @@
       </div>
       <!-- / -->
       <p class="row-button">
-          <a href="main.html">Сформировать</a>
+          <a href="#" onclick="request_content(); return false;">Сформировать</a>
       </p>
     </form>
 </div>
