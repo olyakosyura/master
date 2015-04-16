@@ -450,7 +450,7 @@ sub add_content {
 
     my $deleted = 0;
     my %actions = (
-        1  => { sql_name => 'building', callback => sub {
+        1  => { sql_name => 'building', required => 1, callback => sub {
             my $v = shift;
             return undef unless defined $v;
             unless (defined $buildings{$v}) {
@@ -465,7 +465,7 @@ sub add_content {
             }
             return $v;
         }},
-        5  => { sql_name => 'object_name', callback => sub {
+        5  => { sql_name => 'object_name', required => 1, callback => sub {
             my $v = shift;
             utf8::decode($v);
             if ($v) {
@@ -511,7 +511,11 @@ sub add_content {
             my $ref = $actions{$col};
             if (defined $ref->{callback}) {
                 $r = $ref->{callback}->($r, $row);
-                last unless $e = defined $r;
+
+                unless (defined $r && !$ref->{required}) {
+                    $e = 0;
+                    last;
+                }
             }
             push @query, $r;
         }
@@ -524,18 +528,60 @@ sub add_content {
     return $self->render(json => { ok => 1, count => $rows, deleted => $deleted, errors => { count => scalar @errors, errors => \@errors } });
 }
 
+=cut
+
 sub build {
     my $self = shift;
 
-    my $f = File::Temp->new(UNLINK => 0);
-    print { $f } "HELLO!";
-
-    return $self->render(json => { filename => $f->filename });
+    my $f = File::Temp->new(UNLINK => 1);
 
     my $workbook = Excel::Writer::XLSX->new($f->filename);
     my $worksheet = $workbook->add_worksheet();
 
+    my %sql_atatements = (
+        district => 'where d.id = ?',
+        company => 'where c.id = ?',
+        building => 'where b.id = ?',
+        object => 'where o.id = ?',
+    );
 
+    my @order = qw( object building company district );
+    my $args = $self->req->params->to_hash;
+
+    my $sql_part = '';
+    #for (@
+
+    my $sql_stat = <<SQL;
+        select
+            d.name as district,
+            c.name as company_name,
+            b.name as address,
+            cat.object_name as object_name,
+            cat.category_name as category_name,
+            char.name as characteristic,
+            o.size as size,
+            o.characteristic_value as count,
+            o.size as size,
+            i.name as isolation_type,
+            l.name as laying_method,
+            o.install_year as install_year,
+            o.reconstruction_year as reconstruction_year,
+        from objects o
+        join buildings b on b.id = o.building
+        join companies c on c.id = b.company_id
+        join districts d on d.id = c.district_id
+        join categories cat on cat.id = o.object_name
+        join characteristicts char on char.id = o.characteristic
+        join isolations i on i.is = o.isolation
+        join laying_methods l on l.id = o.isolation
+        %s
+SQL
+    #my $r = $dbh->fetchall_arrayref(sprintf($sql_stat, $sql_statements{
+
+    $f->unlink_on_destroy(0);
+    return $self->render(json => { filename => $f->filename });
 }
+
+=cut
 
 1;

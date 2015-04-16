@@ -13,7 +13,7 @@ if [[ -f .pids ]]
 then
     pids=`cat $pidsf`
     kill -9 $pids
-    sleep 1
+    sleep 2
 fi
 
 echo -n "" > $pidsf
