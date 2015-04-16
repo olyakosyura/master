@@ -30,7 +30,7 @@ BEGIN {
         DB_USER, DB_PASS,
         {
             AutoCommit => 1,
-            RaiseError => 1,
+            RaiseError => 0,
             mysql_enable_utf8 => 1,
             mysql_auto_reconnect => 1,
         }
