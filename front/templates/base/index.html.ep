@@ -4,7 +4,7 @@
     var choosen_object = undefined,
         err_msg = function () { alert('Ошибка получения списка. Попробуйте повторить запрос позднее или обратитесь к администратору.'); };
     function request_content() {
-        window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(choosen_object), '_blank');
+        window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(choosen_object ? choosen_object : {}), '_blank');
     }
     $(function () {
         var elements = ['districts', 'companies', 'buildings', 'objects'],
