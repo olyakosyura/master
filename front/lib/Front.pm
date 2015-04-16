@@ -45,7 +45,7 @@ sub startup {
         $self->render(template => 'base/login');
     });
 
-    $auth->get('/')->to(cb => sub { shift->render(template => 'base/index'); });
+    $auth->get('/')->to("builder#index");
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
 }
 

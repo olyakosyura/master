@@ -17,7 +17,7 @@ sub districts {
     my $q = defined $args && $args->{q} || undef;
     $q = "%$q%" if $q;
 
-    my @args = ($self, "select id, name from districts" . (defined $q ? " where name like ?" : ""));
+    my @args = ($self, "select id, name from districts" . (defined $q ? " where name like ? order by name" : ""));
     push @args, $q if defined $q;
     my $r = select_all @args;
 
@@ -37,8 +37,8 @@ sub companies {
     return $self->render(json => { status => 400, error => "invalid district" }) if defined $d && $d !~ /^\d+$/;
 
     my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d " . 
-        "on d.id = c.district_id" . (defined $q ? " where c.name like ?" : "") .
-        (defined $d ? (defined $q ? " and" : " where") . " c.district_id=?" : ""));
+        "on d.id = c.district_id " . (defined $q ? "where c.name like ? " : "") .
+        (defined $d ? (defined $q ? "and" : "where") . " c.district_id=? " : "") . "order by c.name");
 
     push @args, $q if defined $q;
     push @args, $d if defined $d;
@@ -66,7 +66,8 @@ sub buildings {
         "from buildings b join companies c on c.id = b.company_id join districts d on d.id = c.district_id " .
         (defined $args->{company} ? "where c.id = ? " : "") .
         (defined $args->{district} ? "where d.id = ? " : "") .
-        (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ?" : ""),
+        (defined $args->{q} ? ($id_found ? "and " : "where ") . " b.name like ? " : "") .
+        "order by b.name",
     );
 
     push @args, $args->{company} || $args->{district} if $id_found;
@@ -77,6 +78,32 @@ sub buildings {
     return return_500 $self unless $r;
 
     return $self->render(json => { ok => 1, count => scalar @$r, buildings => $r });
+}
+
+sub objects {
+    my $self = shift;
+
+    my $args = $self->req->params->to_hash;
+    my $q = "%$args->{q}%" if $args->{q};
+
+    for (qw( building )) { # TODO: add other cases (district && company)
+        return $self->render(json => { status => 400, error => "invalid $_" }) if defined $args->{$_} && $args->{$_} !~ /^\d+$/;
+    }
+
+    my @args = (
+        "select o.id as id, cat.object_name as name from objects o join categories cat on o.object_name = cat.id " .
+        (defined $args->{building} ? "where building = ? " : "") .
+        (defined $args->{q} ? (defined $args->{building} ? "and " : "where ") . "cat.object_name like ? " : "") .
+        "order by cat.object_name"
+    );
+
+    push @args, $args->{building} if defined $args->{building};
+    push @args, $q if defined $q;
+
+    my $r = select_all $self, @args;
+
+    return return_500 $self unless $r;
+    return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
 }
 
 1;

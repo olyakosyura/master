@@ -1,5 +1,43 @@
 % layout 'index';
 
+%= javascript begin
+    var choosen_object = undefined;
+    $(function () {
+        var elements = ['districts', 'companies', 'buildings', 'objects'],
+            elements_info = { districts: 'district', companies: 'company', buildings: 'building', },
+            err_msg = function () { alert('Ошибка получения списка. Попробуйте повторить запрос позднее или обратитесь к администратору.'); };
+        for (var el = 0; el < elements.length; ++el) {
+            var $next_elem = el == elements.length - 1 ? undefined : $("#" + elements[el + 1]);
+            $("#" + elements[el]).on('change', function ($next_elem) {
+                return function() {
+                    if (this.value == '-1')
+                        return;
+                    choosen_object = {};
+                    choosen_object[elements_info[$(this).attr('id')]] = this.value;
+                    if ($next_elem) {
+                        $next_elem.val('-1').html($next_elem.find('option')[0]);
+                        $.ajax({
+                            method: 'get',
+                            url: '<%= $general_url %>/cgi-bin/' + $next_elem.attr('id'),
+                            data: choosen_object,
+                            success: function (data) {
+                                var key = $next_elem.attr('id');
+                                if (data[key]) {
+                                    $.each(data[key], function (index, item) {
+                                        $next_elem.append('<option value="' + item.id + '">' + item.name + '</option>');
+                                    });
+                                } else {
+                                    err_msg();
+                                }
+                            },
+                            error: err_msg,
+                        });
+                    }
+                }}($next_elem));
+        }
+    });
+% end
+
 <!-- report-request-form -->
 <div class="report-request-form">
     <h3>Форма запроса отчета</h3>
@@ -7,12 +45,11 @@
       <!--  -->
       <label for="region">Регион</label>
       <div>
-        <select name="region" id="region">
+        <select name="region" id="districts">
           <option>Выберете регион</option>
-          <option value="1">point 1</option>
-          <option value="2">point 2</option>
-          <option value="3">point 3</option>
-          <option value="4">point 4</option>
+% for my $district (@{$districts->{districts}}) {
+          <option value="<%= $district->{id} %>"><%= $district->{name} %></option>
+% }
         </select>
       </div>
       <!-- / -->
@@ -20,47 +57,31 @@
       <label for="area">Округ/район</label>
       <div>
         <select name="area" id="area">
-          <option>Выберете округ или район</option>
-          <option value="1">point 1</option>
-          <option value="2">point 2</option>
-          <option value="3">point 3</option>
-          <option value="4">point 4</option>
+          <option value="-1">Выберете округ или район</option>
         </select>
       </div>
       <!-- / -->
       <!--  -->
       <label for="organization">Организация</label>
       <div>
-        <select name="organization" id="organization">
-          <option>Выберете организацию</option>
-          <option value="1">point 1</option>
-          <option value="2">point 2</option>
-          <option value="3">point 3</option>
-          <option value="4">point 4</option>
+        <select name="organization" id="companies">
+          <option value="-1">Выберете организацию</option>
         </select>
       </div>
       <!-- / -->
       <!--  -->
       <label for="address">Адрес</label>
       <div>
-        <select name="address" id="address">
-          <option>Выберете адрес</option>
-          <option value="1">point 1</option>
-          <option value="2">point 2</option>
-          <option value="3">point 3</option>
-          <option value="4">point 4</option>
+        <select name="address" id="buildings">
+          <option value="-1">Выберете адрес</option>
         </select>
       </div>
       <!-- / -->
       <!--  -->
       <label for="engineering-unit">Инженерный узел</label>
       <div>
-        <select name="engineering-unit" id="engineering-unit">
-          <option>Выберете тип объекта</option>
-          <option value="1">point 1</option>
-          <option value="2">point 2</option>
-          <option value="3">point 3</option>
-          <option value="4">point 4</option>
+        <select name="engineering-unit" id="objects">
+          <option value="-1">Выберете тип объекта</option>
         </select>
       </div>
       <!-- / -->
@@ -68,11 +89,7 @@
       <label for="type-of-expenditure">Вид расходов</label>
       <div>
         <select name="type-of-expenditure" id="type-of-expenditure">
-          <option>Определить показатель</option>
-          <option value="1">point 1</option>
-          <option value="2">point 2</option>
-          <option value="3">point 3</option>
-          <option value="4">point 4</option>
+          <option value="-1">Определить показатель</option>
         </select>
       </div>
       <!-- / -->

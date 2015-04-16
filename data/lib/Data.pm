@@ -23,6 +23,7 @@ sub startup {
     $r->get('/districts')->to('data#districts');
     $r->get('/companies')->to('data#companies');
     $r->get('/buildings')->to('data#buildings');
+    $r->get('/objects')->to('data#objects');
 
     $r->get('/build')->to('results#build');
     $r->post('/add_buildings')->to('results#add_buildings');
