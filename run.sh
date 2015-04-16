@@ -21,6 +21,6 @@ for var in 'session' 'logic' 'data' 'front'
 do
     path=$(echo -n $var | perl -ne '$_ = uc $_;  printf "\"http://127.0.0.1:\$$_%s", "_PORT\""')
     path=$(eval "echo $path")
-    ./$var/script/$var daemon -l $path &
+    ./$var/script/$var prefork -l $path &
     echo -n "$! " >> $pidsf
 done
