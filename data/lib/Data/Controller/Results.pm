@@ -362,7 +362,7 @@ sub add_buildings_meta {
 
     my @errors;
     my %fields = (
-        0 => { sql_name => 'building_id', action => sub {
+        0 => { sql_name => 'building_id', required => 1, action => sub {
             my ($val, $row) = @_;
             unless ($buildings{$val}) {
                 push @errors, { line => $row, error => "Buildings $val not found in database" };
@@ -374,7 +374,7 @@ sub add_buildings_meta {
             }
             return $val;
         }},
-        2 => { sql_name => 'characteristic', },
+        2 => { sql_name => 'characteristic', required => 1, },
         3 => { sql_name => 'build_date', },
         4 => { sql_name => 'reconstruction_date', },
         5 => { sql_name => 'heat_load', },
@@ -390,14 +390,17 @@ sub add_buildings_meta {
 
     my $count = 0;
     my ($min_r, $max_r) = $parser->row_range;
-    for my $row ($min_r + 1 .. $max_r) {
+    for my $row ($min_r .. $max_r) {
         my @data;
         my $e = 1;
         for my $k (@keys) {
             my $v = $parser->cell($row, $k);
             if ($fields{$k}->{action}) {
                 $v = $fields{$k}->{action}->($v, $row);
-                last unless $e = defined $v;
+                if (not(defined $v) && $fields{$k}->{required}) {
+                    $e = undef;
+                    last;
+                }
             }
             push @data, $v;
         }
