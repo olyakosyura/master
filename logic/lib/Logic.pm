@@ -130,6 +130,9 @@ sub startup {
 
         my $status = $response->{status} || 200;
         delete $response->{status};
+        if ($status != 200) {
+            unlink $fh->filename;
+        }
         return $self->render(status => $status, json => $response);
     });
 

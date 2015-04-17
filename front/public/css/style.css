@@ -485,6 +485,7 @@ header .data-box b{
 }
 .report-request-form form > div{
 	padding-bottom: 1.89em;
+	
 }
 .report-request-form label{
 	display: block;
@@ -1057,6 +1058,7 @@ footer a:hover img{
 	vertical-align: middle;
 	cursor: pointer;
 	width: 100%;
+	position: relative;
 }
 .jq-selectbox__select {
 	height: 2.15em;
@@ -1116,7 +1118,7 @@ footer a:hover img{
 .jq-selectbox.disabled .jq-selectbox__trigger-arrow {}
 .jq-selectbox__dropdown {
 	top: 2.25em;
-	width: 100%;
+	width: 100% !important;
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 	margin: 0;
@@ -1125,6 +1127,8 @@ footer a:hover img{
 	border-radius: 0px;
 	background: #FFF;
 	font: 1.2em/2.1em Tahoma, Arial, sans-serif;
+	position: relative;
+	 white-space: normal !important;
 }
 .jq-selectbox__search {
 	margin: 5px;
@@ -1157,13 +1161,21 @@ footer a:hover img{
 	margin: 0;
 	padding: 0;
 	max-height:11em;
+		-webkit-box-shadow:0px 0px 4px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow:0px 0px 4px rgba(0, 0, 0, 0.2);
+  box-shadow:0px 0px 4px rgba(0, 0, 0, 0.2);
 }
 .jq-selectbox li {
 	min-height: 18px;
-	padding: 5px 10px 6px;
+	font-size: 0.85em;
+	padding: 0.3em 0.63em ;
 	color: #414a2e;
 	background-color: #E0E1DD;
 	border-bottom: 1px solid #89c211;
+	white-space:normal;
+	line-height: 1.4em;
+	
+
 	
 	-moz-transition: all 0.2s 0.2s ease;
 -o-transition: all 0.2s 0.2s ease;
@@ -1172,6 +1184,7 @@ footer a:hover img{
 .jq-selectbox li.selected {
 	background-color: #ffffff;
 	color: #414a2e;
+	 white-space: normal !important;
 }
 .jq-selectbox li:hover {
 	background-color: #fff;
