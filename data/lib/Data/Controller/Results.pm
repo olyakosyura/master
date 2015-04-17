@@ -571,7 +571,7 @@ sub build {
 
     my $sql_stat = <<SQL;
         select
-            o.id as id,
+            d.id as contract_id,
             d.name as district,
             c.name as company_name,
             b.name as address,
@@ -584,7 +584,10 @@ sub build {
             i.name as isolation_type,
             l.name as laying_method,
             o.install_year as install_year,
-            o.reconstruction_year as reconstruction_year
+            o.reconstruction_year as reconstruction_year,
+            o.wear as wear,
+            o.cost as cost,
+            o.last_usage_limit as usage_limit
         from objects o
         join buildings b on b.id = o.building
         join companies c on c.id = b.company_id
@@ -594,6 +597,7 @@ sub build {
         left outer join isolations i on i.id = o.isolation
         left outer join laying_methods l on l.id = o.laying_method
         %s
+        order by b.id, o.id
 SQL
     my $r = select_all($self, sprintf($sql_stat, $sql_part), $sql_arg);
 
