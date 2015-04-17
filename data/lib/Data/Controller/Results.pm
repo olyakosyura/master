@@ -530,8 +530,6 @@ sub add_content {
     return $self->render(json => { ok => 1, count => $rows, deleted => $deleted, errors => { count => scalar @errors, errors => \@errors } });
 }
 
-=cut
-
 sub build {
     my $self = shift;
 
@@ -540,50 +538,69 @@ sub build {
     my $workbook = Excel::Writer::XLSX->new($f->filename);
     my $worksheet = $workbook->add_worksheet();
 
-    my %sql_atatements = (
+    my %sql_statements = (
         district => 'where d.id = ?',
         company => 'where c.id = ?',
         building => 'where b.id = ?',
         object => 'where o.id = ?',
+        region => 'where d.region = ?',
     );
 
-    my @order = qw( object building company district );
+    my @order = qw( object building company district region );
     my $args = $self->req->params->to_hash;
 
-    my $sql_part = '';
-    #for (@
+    my $sql_part;
+    my $sql_arg;
+
+    for (@order) {
+        if (defined $args->{$_}) {
+            $sql_part = $sql_statements{$_};
+            $sql_arg = $args->{$_};
+            last;
+        }
+    }
+
+    unless (defined $sql_arg) {
+        return $self->render(json => { status => 400, error => join(' or ', keys %sql_statements) . " not empty argument is required" });
+    }
+
+    unless (defined $args->{calc_type}) {
+        # TODO: Not really implmented
+        return $self->render(json => { status => 400, error => "calc_type argument is required" });
+    }
 
     my $sql_stat = <<SQL;
         select
+            o.id as id,
             d.name as district,
             c.name as company_name,
             b.name as address,
             cat.object_name as object_name,
             cat.category_name as category_name,
-            char.name as characteristic,
+            charac.name as characteristic,
             o.size as size,
             o.characteristic_value as count,
             o.size as size,
             i.name as isolation_type,
             l.name as laying_method,
             o.install_year as install_year,
-            o.reconstruction_year as reconstruction_year,
+            o.reconstruction_year as reconstruction_year
         from objects o
         join buildings b on b.id = o.building
         join companies c on c.id = b.company_id
         join districts d on d.id = c.district_id
         join categories cat on cat.id = o.object_name
-        join characteristicts char on char.id = o.characteristic
-        join isolations i on i.is = o.isolation
-        join laying_methods l on l.id = o.isolation
+        left outer join characteristics charac on charac.id = o.characteristic
+        left outer join isolations i on i.id = o.isolation
+        left outer join laying_methods l on l.id = o.laying_method
         %s
 SQL
-    #my $r = $dbh->fetchall_arrayref(sprintf($sql_stat, $sql_statements{
+    my $r = select_all($self, sprintf($sql_stat, $sql_part), $sql_arg);
+
+    return $self->render(json => { conten => $r });
 
     $f->unlink_on_destroy(0);
     return $self->render(json => { filename => $f->filename });
 }
-
-=cut
 
 1;

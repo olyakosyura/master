@@ -5,7 +5,7 @@
         err_msg = function () { alert('Ошибка получения списка. Попробуйте повторить запрос позднее или обратитесь к администратору.'); };
     function request_content() {
         var calc_type = $("#calc_types").val();
-        if (!choosen_object) choosen_object = {};
+        if (!choosen_object) choosen_object = { region: $("#regions").val() };
         choosen_object['calc_type'] = calc_type;
         window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(choosen_object), '_blank');
     }
@@ -60,7 +60,7 @@
       <label for="region">Регион</label>
       <div>
 % my $i = 0; my $current = "Москва";
-% my %regions = map { $_->{region} => $i++ } @{$districts->{districts}};
+% my %regions = map { $_->{region} => $_->{region} } @{$districts->{districts}};
         <select name="region" id="regions">
           <option>Выберете регион</option>
 % for (sort keys %regions) {
