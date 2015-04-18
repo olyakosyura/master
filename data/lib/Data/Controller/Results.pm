@@ -707,7 +707,7 @@ sub build {
 
     my @extra_args = (
         ', ct.name as calc_type',
-        sprintf('join calc_types ct on ct.id %c ?', $args->{calc_type} && $args->{calc_type} == -1 ? '>' : '='),
+        sprintf('join calc_types ct on ct.id %s ?', $args->{calc_type} && $args->{calc_type} == -1 ? '>' : '='),
     );
 
     my $sql_stat = <<SQL;
