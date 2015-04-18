@@ -1,6 +1,0 @@
-<!DOCTYPE html>
-<html>
-  <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
-  <head><title><%= title %></title></head>
-  <body><%= content %></body>
-</html>
