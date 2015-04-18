@@ -72,7 +72,7 @@ sub startup {
 
         return $self->render(status => 401, json => { error => 'unauthorized', description => $res->{error} }) && undef if $res->{error};
 
-        $self->stash(uid => $res->{uid}, role => $res->{role});
+        $self->stash(uid => $res->{uid}, role => $res->{role}, name => $res->{name}, lastname => $res->{lastname});
         return $res->{granted} && $res->{granted} == 1;
     });
 
@@ -140,7 +140,10 @@ sub startup {
         my $self = shift;
         my $page_name = $self->param('any');
 
-        $self->app->log->debug(length $self->req->body);
+        my $args = $self->req->params->to_hash;
+        if ($page_name eq 'build') {
+            @$args{qw( name lastname )} = ($self->stash('name'), $self->stash('lastname'));
+        }
 
         my $response = send_request($self,
             method => $self->req->method,

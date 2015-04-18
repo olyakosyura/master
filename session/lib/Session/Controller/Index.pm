@@ -29,7 +29,7 @@ sub check_session {
     return $self->render(json => { error => 'unauthorized' })
         unless $r and $r->{user_id} and ($r->{user_agent} eq md5_hex($self->param('user_agent')));
 
-    return $self->render(json => { ok => 1, uid => $r->{user_id}, role => $r->{role} });
+    return $self->render(json => { ok => 1, uid => $r->{user_id}, role => $r->{role}, name => $r->{name}, lastname => $r->{lastname} });
 }
 
 sub about {
@@ -68,7 +68,8 @@ sub login {
 
     my $sum = md5_hex("$r->{id}" . time . rand(100500) . "$ua");
 
-    $self->{memc}->set("session_$sum", { user_id => $r->{id}, user_agent => md5_hex($ua), role => $r->{role} }, EXP_TIME);
+    $self->{memc}->set("session_$sum", {
+            user_id => $r->{id}, user_agent => md5_hex($ua), role => $r->{role}, name => $r->{name}, lastname => $r->{lastname} }, EXP_TIME);
 
     return $self->render(json => { session_id => $sum });
 }

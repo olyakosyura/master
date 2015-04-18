@@ -148,6 +148,8 @@ use Data::Dumper;
 use DB qw( :all );
 use Helpers qw( :all );
 
+use Translation qw( :all );
+
 sub parser {
     my ($self, $f) = @_;
 
@@ -530,13 +532,105 @@ sub add_content {
     return $self->render(json => { ok => 1, count => $rows, deleted => $deleted, errors => { count => scalar @errors, errors => \@errors } });
 }
 
+sub render_xlsx {
+    my ($self, $content, $workbook) = @_;
+
+    # look at http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm to edit styles below
+    my %styles = (
+        header => $workbook->add_format(
+            text_wrap => 1,
+            align => 'center',
+            valign => 'vcenter',
+            color => 'black',
+            bg_color => 'gray',
+        ),
+        text => $workbook->add_format(
+            text_wrap => 1,
+            valign => 'vcenter',
+        ),
+        integer => $workbook->add_format(
+            shrink => 1,
+            align => 'center',
+            valign => 'vcenter',
+        ),
+        float => $workbook->add_format(
+            align => 'center',
+            valign => 'vcenter',
+        ),
+        year => $workbook->add_format(
+            align => 'center',
+            valign => 'vcenter',
+        ),
+        money => $workbook->add_format(
+            align => 'center',
+            valign => 'vcenter',
+        ),
+        percent => $workbook->add_format(
+            num_format => '##\%;[Red](##\%)',
+            align => 'center',
+            valign => 'vcenter',
+        ),
+    );
+
+    my %fields = (
+        # mysql name             header_text        style       column_width
+        contract_id         => [ contract_id,       'integer',  10, ],
+        company_name        => [ company_name,      'text',     50, ],
+        address             => [ address,           'text',     40, ],
+        district            => [ district,          'text',     10, ],
+        object_name         => [ object_name,       'text',     50, ],
+        category_name       => [ category,          'text',     30, ],
+        characteristic      => [ characteristic,    'text',     30, ],
+        count               => [ count,             'float',    10, ],
+        size                => [ size,              'integer',  10, ],
+        isolation_type      => [ isolation_type,    'text',     30, ],
+        laying_method       => [ laying_method,     'text',     20, ],
+        install_year        => [ install_year,      'year',     10, ],
+        reconstruction_year => [ reconstruction_year, 'year',   10, ],
+        wear                => [ wear,              'percent',  10, ],
+        cost                => [ cost,              'money',    10, ],
+        usage_limit         => [ usage_limit,       'integer',  10, ],
+    );
+
+    my @order = qw(
+        contract_id
+        company_name
+        address
+        district
+        object_name
+        category_name
+        characteristic
+        count
+        size
+        isolation_type
+        laying_method
+        install_year
+        reconstruction_year
+        wear
+        cost
+        usage_limit
+    );
+
+    my $worksheet = $workbook->add_worksheet();
+    for my $row (-1 .. @$content - 1) {
+        for my $index (0 .. @order - 1) {
+            my $f = $fields{$order[$index]};
+            if ($row == -1) {
+                $worksheet->set_column($index, $index, $f->[2]);
+                $worksheet->write(0, $index, $f->[0], $styles{'header'});
+            } else {
+                $worksheet->write($row + 1, $index, $content->[$row]{$order[$index]}, $styles{$f->[1]});
+            }
+        }
+    }
+}
+
 sub build {
     my $self = shift;
 
     my $f = File::Temp->new(UNLINK => 1);
 
     my $workbook = Excel::Writer::XLSX->new($f->filename);
-    my $worksheet = $workbook->add_worksheet();
 
     my %sql_statements = (
         district => 'where d.id = ?',
@@ -571,7 +665,7 @@ sub build {
 
     my $sql_stat = <<SQL;
         select
-            d.id as contract_id,
+            b.id as contract_id,
             d.name as district,
             c.name as company_name,
             b.name as address,
@@ -601,7 +695,15 @@ sub build {
 SQL
     my $r = select_all($self, sprintf($sql_stat, $sql_part), $sql_arg);
 
-    return $self->render(json => { conten => $r });
+    $workbook->set_properties(
+        title => xlsx_default_title,
+        author => ($args->{name} || "") . " " . ($args->{lastname} || ""),
+        # TODO: add other properties
+        # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
+    );
+
+    $self->render_xlsx($r, $workbook);
+    $workbook->close;
 
     $f->unlink_on_destroy(0);
     return $self->render(json => { filename => $f->filename });
