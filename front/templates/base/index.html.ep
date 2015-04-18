@@ -120,7 +120,6 @@
       <label for="type-of-expenditure">Вид расходов</label>
       <div>
         <select name="type-of-expenditure" id="calc_types">
-          <option value="-1">Определить показатель</option>
 % for my $c (@{$calc_types->{types}}) {
           <option value="<%= $c->{id} %>"><%= $c->{name} %></option>
 % }

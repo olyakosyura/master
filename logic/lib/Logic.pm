@@ -151,6 +151,7 @@ sub startup {
             port => DATA_PORT,
             args => $self->req->params->to_hash,
             data => $self->req->body,
+            headers => { Referer => $self->req->headers->referrer, },
         );
 
         return $self->render(status => 500, json => { error => 'internal' }) unless $response;

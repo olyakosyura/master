@@ -5,10 +5,11 @@ use AccessDispatcher qw( send_request role_less_then );
 use MainConfig qw( GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
-    '/login'     => 'user',
-    '/objects'   => 'manager',
-    '/upload'    => 'admin',
     '/'          => 'user',
+    '/login'     => 'user',
+    '/upload'    => 'admin',
+    '/objects'   => 'manager',
+    '/users'     => 'admin',
 );
 
 # This method will run once at server start
@@ -64,6 +65,7 @@ sub startup {
 
     $auth->get('/')->to("builder#index");
     $auth->get('/objects')->to("builder#objects");
+    $auth->get('/users')->to(cb => sub { shift->render(template => 'base/users'); });
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
 
     $auth->any('/*any' => { any => '' } => sub {

@@ -200,6 +200,7 @@ sub send_request {
         port => undef,
         uid => undef,
         data => undef,
+        headers => undef,
         @_,
     );
 
@@ -213,6 +214,11 @@ sub send_request {
     $url->port($args{port}) if defined $args{port};
 
     my $ua = Mojo::UserAgent->new();
+
+    $ua->on(start => sub {
+        my ($ua, $tx) = @_;
+        $tx->req->headers->header(%{$args{headers}});
+    }) if $args{headers};
 
     map { delete $args{args}->{$_} unless defined $args{args}->{$_} } keys %{$args{args}};
     $inst->app->log->debug(sprintf "Sending request [method: %s] [url: %s] [port: %d] [args: %s]",

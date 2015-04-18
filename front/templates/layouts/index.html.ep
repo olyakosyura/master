@@ -72,7 +72,7 @@
                   <span>Таблицы смет</span>
                 </a></li>
 % if ($role eq 'admin') {
-                <li><a href="#">
+                <li><a href="<%= $general_url %>/users" <%= stash('url') eq '/users' ? "class=active" : '' %> >
                     <em id="em_3"></em>
                     <span>Таблица<br  />пользователей</span>
                 </a></li>

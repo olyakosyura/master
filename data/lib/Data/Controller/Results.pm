@@ -533,7 +533,7 @@ sub add_content {
 }
 
 sub render_xlsx {
-    my ($self, $content, $workbook) = @_;
+    my ($self, $content, $workbook, $calc_type_required) = @_;
 
     my $header_bg_color = $workbook->set_custom_color(9, 201, 194, 194);
     my $splitter_bg_color = $workbook->set_custom_color(10, 230, 223, 223);
@@ -622,8 +622,11 @@ sub render_xlsx {
         building_cost
         cost
         usage_limit
-        calc_type
     );
+
+    if ($calc_type_required) {
+        push @order, 'calc_type';
+    }
 
     my %skip_if_object = map { $_ => 1 } qw( building_cost contract_id );
     my %print_if_building = map { $_ => 1 } qw( contract_id company_name address district building_cost );
@@ -692,10 +695,20 @@ sub build {
         return $self->render(json => { status => 400, error => join(' or ', keys %sql_statements) . " not empty argument is required" });
     }
 
-    unless (defined $args->{calc_type}) {
+    my $calc_type_required = 1;
+    if ($self->req->headers->referrer =~ m{/objects$}) {
+        $calc_type_required = 0;
+    }
+
+    if ($calc_type_required && !defined $args->{calc_type}) {
         # TODO: Not really implmented
         return $self->render(json => { status => 400, error => "calc_type argument is required" });
     }
+
+    my @extra_args = (
+        ', ct.name as calc_type',
+        sprintf('join calc_types ct on ct.id %c ?', $args->{calc_type} && $args->{calc_type} == -1 ? '>' : '='),
+    );
 
     my $sql_stat = <<SQL;
         select
@@ -716,14 +729,14 @@ sub build {
             o.reconstruction_year as reconstruction_year,
             o.wear as wear,
             o.cost as cost,
-            o.last_usage_limit as usage_limit,
-            ct.name as calc_type
+            o.last_usage_limit as usage_limit
+            %s
         from objects o
         join buildings b on b.id = o.building
         join companies c on c.id = b.company_id
         join districts d on d.id = c.district_id
-        join calc_types ct on ct.id %s
         join categories cat on cat.id = o.object_name
+        %s
         left outer join characteristics charac on charac.id = o.characteristic
         left outer join isolations i on i.id = o.isolation
         left outer join laying_methods l on l.id = o.laying_method
@@ -731,8 +744,9 @@ sub build {
         %s
         order by b.id, o.id
 SQL
-    my $ct_part = defined $args->{calc_type} ? " = ?" : " > ?";
-    my $r = select_all($self, sprintf($sql_stat, $ct_part, $sql_part), ($args->{calc_type} || -1), $sql_arg);
+    my $r = select_all($self,
+        sprintf($sql_stat, ($calc_type_required ? @extra_args : ('', '')), $sql_part),
+        ($calc_type_required ? $args->{calc_type} : ()), $sql_arg);
 
     $workbook->set_properties(
         title => xlsx_default_title,
@@ -741,7 +755,7 @@ SQL
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
     );
 
-    $self->render_xlsx($r, $workbook);
+    $self->render_xlsx($r, $workbook, $calc_type_required);
     $workbook->close;
 
     $f->unlink_on_destroy(0);

@@ -602,7 +602,7 @@ header .data-box b{
 
 
 /*================== /about-service ==================*/
-.server-not-found article{
+.server-not-found{
 	text-align: center;
 	padding: 13em 0 13em 0;
 }
@@ -610,6 +610,7 @@ header .data-box b{
 	color: #646B55;
 	text-transform: uppercase;
 	font-size: 3.1em;
+	line-height: 1.3em;
 	font-weight: normal;
 	letter-spacing: 0.07em;
 }
