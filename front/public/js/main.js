@@ -25,13 +25,21 @@
         $(this).removeClass('icon-top');
         $('.about-service h4').removeClass('border-bottom');
     });
-
     /*/edit-data(index.html)*/
+
+
 });
 
 
+/*
+ * jQuery Reveal Plugin 1.0
+ * www.ZURB.com
+ * Copyright 2010, ZURB
+ * Free to use under the MIT license.
+ * http://www.opensource.org/licenses/mit-license.php
+*/
 
-//======================================= lightbox
+
 (function ($) {
   $('a[data-reveal-id]').live('click', function (event) {
     event.preventDefault();
@@ -149,3 +157,6 @@
     });
   };
 })(jQuery);
+
+
+

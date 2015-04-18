@@ -27,18 +27,15 @@
   <section class="intro-sign-in">
      <article>
             <h6>АВТОРИЗИРУЙТЕСЬ ПОЖАЛУЙТА</h6>
-            <!-- TODO: Fix error form -->
-            <div id="frm-error">
-            </div>
             <form id="frm-login">
                 <div class="row-input">
-                    <div class="col-right">
-                        <label for="intro-password" id="intro-password">Пароль</label>
-                        <input name="intro-password" type="password">
-                    </div>
                     <div class="col-left">
                         <label for="intro-login" id="intro-login">Логин</label>
                         <input name="intro-login" type="text">
+                    </div>
+                    <div class="col-right">
+                        <label for="intro-password" id="intro-password">Пароль</label>
+                        <input name="intro-password" type="password">
                     </div>
                 </div>
 %= javascript begin
@@ -49,11 +46,13 @@
                             pass = $frm.find("[name=intro-password]").val();
 
                         if (login == "") { // TODO: Trim spaces
-                            $err.text("Login field is required!");
+							$("#modal-enter").reveal();
+                            //$err.text("Login field is required!");
                             return;
                         }
                         if (pass == "") {
-                            $err.text("Password field is required!");
+							$("#modal-enter").reveal();
+                            //$err.text("Password field is required!");
                             return;
                         }
 
@@ -69,9 +68,11 @@
                                 },
                                 error: function (data) {
                                     if (data && data.description) {
-                                        $err.text(data.description);
+										$("#modal-enter").reveal();
+                                        //$err.text(data.description);
                                     } else {
-                                        $err.text("Invalid login or password"); // Maybe set "internal server error" ?
+										$("#modal-enter").reveal();
+                                        //$err.text("Invalid login or password"); // Maybe set "internal server error" ?
                                     }
                                 },
                             });
@@ -92,5 +93,18 @@
     <p><span>&copy;</span> 2015 &laquo;Аудит Предприятий Энергетического Комплекса&raquo;</p>
     <a title="ВЕСНА" href="#"><img src="<%= $general_url %>/images/springtime.png" alt=""></a>
 </footer>
+<!--=============================== /Modal ==============================-->
+<!--========== modal-enter ==========-->
+<div id="modal-enter" class="reveal-modal modal-enter">
+ <div class="modal-center">
+    <h6>К сожалению вы ошиблись</h6>
+    <p>Проверьте правильность логина и пароля<br  />и попробуйте снова</p>
+    <div>
+      <a class="close-reveal-modal"  href="#">ХОРОШО</a>
+    </div>
+ </div>
+</div>
+<!--========== /modal-enter ==========-->
+<!--=============================== /Modal ==============================-->
 </body>
 </html>
