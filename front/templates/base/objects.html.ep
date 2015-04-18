@@ -4,13 +4,11 @@
     var choosen_object = undefined,
         err_msg = function () { alert('Ошибка получения списка. Попробуйте повторить запрос позднее или обратитесь к администратору.'); };
     function request_content() {
-        var calc_type = $("#calc_types").val();
         if (!choosen_object) choosen_object = { region: $("#regions").val() };
-        choosen_object['calc_type'] = calc_type;
         window.open(window.location.origin + '<%= $general_url %>/cgi-bin/build?' + $.param(choosen_object), '_blank');
     }
-    var elements = ['districts', 'companies', 'buildings', 'objects'],
-        elements_info = { districts: 'district', companies: 'company', buildings: 'building', objects: 'object' };
+    var elements = ['districts', 'companies', 'buildings'],
+        elements_info = { districts: 'district', companies: 'company', buildings: 'building' };
     $(function () {
         for (var el = 0; el < elements.length; ++el) {
             var $next_elem = el == elements.length - 1 ? undefined : $("#" + elements[el + 1]);
@@ -54,7 +52,7 @@
 
 <!-- report-request-form -->
 <div class="report-request-form">
-    <h3>Форма запроса отчета</h3>
+    <!--<h3>Форма запроса отчета</h3>-->
     <form>
       <!--  -->
       <label for="region">Регион</label>
@@ -108,46 +106,26 @@
         </select>
       </div>
       <!-- / -->
-      <!--  -->
-      <label for="engineering-unit">Инженерный узел</label>
-      <div>
-        <select name="engineering-unit" id="objects">
-          <option value="-1">Выберете тип объекта</option>
-        </select>
-      </div>
-      <!-- / -->
-      <!--  -->
-      <label for="type-of-expenditure">Вид расходов</label>
-      <div>
-        <select name="type-of-expenditure" id="calc_types">
-          <option value="-1">Определить показатель</option>
-% for my $c (@{$calc_types->{types}}) {
-          <option value="<%= $c->{id} %>"><%= $c->{name} %></option>
-% }
-        </select>
-      </div>
-      <!-- / -->
       <p class="row-button">
-          <a href="#" onclick="request_content(); return false;">Сформировать</a>
-      </p>
+          <a href="#" onclick="request_content(); return false;">Выгрузить</a>
+      </p>      
     </form>
 </div>
 <!-- /report-request-form -->
-<!-- about-service -->
-       <div class="about-service">
-          <h4><a href="#"><span></span></a>О сервисе</h4>
-          <div>
-              <h5>Добро пожаловать</h5>
-              <p>Отвергает именно кто возжаждал восхваляющих потому из презирает: примером если тех бы картину нас некоей, что  немалое что. Это стремящегося предаваться из-за наслаждений наслаждение умеет стремящегося ни само никого когда стал простейшим избегал отвергает говорил вами что такие нет раскрою жизни то никаких.</p>
-              <ul>
-                <li>Отвергает именно кто </li>
-                <li>Возжаждал восхваляющих потому из презирает</li>
-                <li>Примером если тех бы картину </li>
-                <li>Наслаждений наслаждение умеет стремящегося ни само </li>
-              </ul>
-          </div>
-       </div>
-<!-- /about-service -->
+<div class="row-button1">
+	<div class="col-left">
+	   <a href="#" data-reveal-id="modal-upload"><input type="button" value="Выгрузить"></a>
+	</div>
+	<div class="col-right">
+	   <a href="#" >
+		 <label class="file_upload" >
+			<span>загрузить</span>
+			<input type="file">
+		</label>
+	   </a>
+	</div>
+</div>
+
 
 %= javascript begin
     $(function() {

@@ -50,7 +50,7 @@ sub startup {
 
         return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
 
-        $self->stash(general_url => GENERAL_URL);
+        $self->stash(general_url => GENERAL_URL, url => $url);
         $self->stash(%$res); # login name lastname role uid email objects_count
 
         if (!role_less_then $res->{role}, $access_rules{$url} || 'admin') {

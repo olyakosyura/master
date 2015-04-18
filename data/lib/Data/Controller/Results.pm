@@ -601,6 +601,7 @@ sub render_xlsx {
         cost                => [ cost,              'money',    10, ],
         building_cost       => [ building_cost,     'money',    10, ],
         usage_limit         => [ usage_limit,       'integer',  10, ],
+        calc_type           => [ calc_type,         'text',     30, ],
     );
 
     my @order = qw(
@@ -621,6 +622,7 @@ sub render_xlsx {
         building_cost
         cost
         usage_limit
+        calc_type
     );
 
     my %skip_if_object = map { $_ => 1 } qw( building_cost contract_id );
@@ -714,11 +716,13 @@ sub build {
             o.reconstruction_year as reconstruction_year,
             o.wear as wear,
             o.cost as cost,
-            o.last_usage_limit as usage_limit
+            o.last_usage_limit as usage_limit,
+            ct.name as calc_type
         from objects o
         join buildings b on b.id = o.building
         join companies c on c.id = b.company_id
         join districts d on d.id = c.district_id
+        join calc_types ct on ct.id %s
         join categories cat on cat.id = o.object_name
         left outer join characteristics charac on charac.id = o.characteristic
         left outer join isolations i on i.id = o.isolation
@@ -727,7 +731,8 @@ sub build {
         %s
         order by b.id, o.id
 SQL
-    my $r = select_all($self, sprintf($sql_stat, $sql_part), $sql_arg);
+    my $ct_part = defined $args->{calc_type} ? " = ?" : " > ?";
+    my $r = select_all($self, sprintf($sql_stat, $ct_part, $sql_part), ($args->{calc_type} || -1), $sql_arg);
 
     $workbook->set_properties(
         title => xlsx_default_title,
