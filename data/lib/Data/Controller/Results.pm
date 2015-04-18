@@ -535,42 +535,52 @@ sub add_content {
 sub render_xlsx {
     my ($self, $content, $workbook) = @_;
 
+    my $header_bg_color = $workbook->set_custom_color(9, 201, 194, 194);
+    my $splitter_bg_color = $workbook->set_custom_color(10, 230, 223, 223);
+
     # look at http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm to edit styles below
     my %styles = (
-        header => $workbook->add_format(
+        header => {
             text_wrap => 1,
             align => 'center',
             valign => 'vcenter',
             color => 'black',
-            bg_color => 'gray',
-        ),
-        text => $workbook->add_format(
+            bg_color => $header_bg_color,
+        },
+        text => {
             text_wrap => 1,
             valign => 'vcenter',
-        ),
-        integer => $workbook->add_format(
+        },
+        integer => {
             shrink => 1,
             align => 'center',
             valign => 'vcenter',
-        ),
-        float => $workbook->add_format(
+        },
+        float => {
             align => 'center',
             valign => 'vcenter',
-        ),
-        year => $workbook->add_format(
+        },
+        year => {
             align => 'center',
             valign => 'vcenter',
-        ),
-        money => $workbook->add_format(
+        },
+        money => {
             align => 'center',
             valign => 'vcenter',
-        ),
-        percent => $workbook->add_format(
+        },
+        percent => {
             num_format => '##\%;[Red](##\%)',
             align => 'center',
             valign => 'vcenter',
-        ),
+        },
+        building_splitter => {
+            bold => 1,
+            bg_color => $splitter_bg_color,
+        },
     );
+
+    my %styles_cache = map { $_ => $workbook->add_format(%{$styles{$_}}) } keys %styles;
+    my %splitter_styles_cache = map { $_ => $workbook->add_format(%{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
 
     my %fields = (
         # mysql name             header_text        style       column_width
@@ -589,6 +599,7 @@ sub render_xlsx {
         reconstruction_year => [ reconstruction_year, 'year',   10, ],
         wear                => [ wear,              'percent',  10, ],
         cost                => [ cost,              'money',    10, ],
+        building_cost       => [ building_cost,     'money',    10, ],
         usage_limit         => [ usage_limit,       'integer',  10, ],
     );
 
@@ -607,21 +618,40 @@ sub render_xlsx {
         install_year
         reconstruction_year
         wear
+        building_cost
         cost
         usage_limit
     );
 
+    my %skip_if_object = map { $_ => 1 } qw( building_cost contract_id );
+    my %print_if_building = map { $_ => 1 } qw( contract_id company_name address district building_cost );
+
     my $worksheet = $workbook->add_worksheet();
+    my $last_building_id = -100500;
+    my $xls_row = 0;
     for my $row (-1 .. @$content - 1) {
+        if ($row >= 0 && $last_building_id != $content->[$row]{building_cost}) {
+            $last_building_id = $content->[$row]{building_cost};
+            for my $index (0 .. @order - 1) {
+                unless ($print_if_building{$order[$index]}) {
+                    $worksheet->write($xls_row, $index, undef, $splitter_styles_cache{$fields{$order[$index]}->[1]});
+                } else {
+                    $worksheet->write($xls_row, $index, $content->[$row]{$order[$index]}, $splitter_styles_cache{$fields{$order[$index]}->[1]});
+                }
+            }
+            ++$xls_row;
+        }
         for my $index (0 .. @order - 1) {
             my $f = $fields{$order[$index]};
             if ($row == -1) {
                 $worksheet->set_column($index, $index, $f->[2]);
-                $worksheet->write(0, $index, $f->[0], $styles{'header'});
+                $worksheet->write($xls_row, $index, $f->[0], $styles_cache{'header'});
             } else {
-                $worksheet->write($row + 1, $index, $content->[$row]{$order[$index]}, $styles{$f->[1]});
+                next if $skip_if_object{$order[$index]};
+                $worksheet->write($xls_row, $index, $content->[$row]{$order[$index]}, $styles_cache{$f->[1]});
             }
         }
+        ++$xls_row;
     }
 }
 
@@ -666,6 +696,7 @@ sub build {
     my $sql_stat = <<SQL;
         select
             b.id as contract_id,
+            bm.cost as building_cost,
             d.name as district,
             c.name as company_name,
             b.name as address,
@@ -690,6 +721,7 @@ sub build {
         left outer join characteristics charac on charac.id = o.characteristic
         left outer join isolations i on i.id = o.isolation
         left outer join laying_methods l on l.id = o.laying_method
+        left outer join buildings_meta bm on bm.building_id = b.id
         %s
         order by b.id, o.id
 SQL
