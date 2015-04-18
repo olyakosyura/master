@@ -12,6 +12,12 @@ sub startup {
     $self->plugin('PODRenderer');
     $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
 
+    $self->routes->get('/login')->to(cb => sub {
+        my $self = shift;
+        $self->stash(general_url => GENERAL_URL);
+        $self->render(template => 'base/login');
+    });
+
     my $auth = $self->routes->under('/' => sub {
         my $self = shift;
         my $r = $self->req;
@@ -39,16 +45,15 @@ sub startup {
         return 1;
     });
 
-    $self->routes->get('/login')->to(cb => sub {
-        my $self = shift;
-        $self->stash(general_url => GENERAL_URL);
-        $self->render(template => 'base/login');
-    });
-
     $auth->get('/')->to("builder#index");
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
 
-    $auth->any('/(.*)')->to(cb => sub { shift->render(template => 'base/not_found'); });
+    $auth->any('/*any' => { any => '' } => sub {
+        my $self = shift;
+        if ($self->param('any') ne 'login') {
+            $self->render(template => 'base/not_found');
+        }
+    });
 }
 
 1;
