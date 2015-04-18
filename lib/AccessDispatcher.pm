@@ -16,6 +16,7 @@ our @EXPORT_OK = qw(
     check_access
     send_request
     check_session
+    role_less_then
 );
 
 our %EXPORT_TAGS = (

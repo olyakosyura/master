@@ -1,8 +1,15 @@
 package Front;
 use Mojo::Base 'Mojolicious';
 
-use AccessDispatcher qw( send_request );
+use AccessDispatcher qw( send_request role_less_then );
 use MainConfig qw( GENERAL_URL SESSION_PORT );
+
+my %access_rules = (
+    '/login'     => 'user',
+    '/objects'   => 'manager',
+    '/upload'    => 'admin',
+    '/'          => 'user',
+);
 
 # This method will run once at server start
 sub startup {
@@ -33,19 +40,30 @@ sub startup {
         );
         return $self->render(status => 500) unless $res;
 
+        my $url = $r->url;
+        $url =~ s#^(/[^?]*)#$1#;
+
         if (defined $res->{status}) {
             return $self->render(template => 'base/login') && undef if $res->{status} == 401;
             return $self->render(status => $res->{status}) && undef;
         }
 
-        $self->stash(general_url => GENERAL_URL);
         return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
 
+        $self->stash(general_url => GENERAL_URL);
         $self->stash(%$res); # login name lastname role uid email objects_count
+
+        if (!role_less_then $res->{role}, $access_rules{$url} || 'admin') {
+            $self->app->log->warn("Access to $url ($access_rules{$url} is needed) denied for $res->{login} ($res->{role})");
+            $self->render(template => 'base/not_found');
+            return undef;
+        }
+
         return 1;
     });
 
     $auth->get('/')->to("builder#index");
+    $auth->get('/objects')->to("builder#objects");
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
 
     $auth->any('/*any' => { any => '' } => sub {

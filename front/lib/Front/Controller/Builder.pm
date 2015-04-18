@@ -22,4 +22,18 @@ sub index {
     $self->render(template => 'base/index');
 }
 
+sub objects {
+    my $self = shift;
+
+    my $r = send_request($self,
+        url => 'districts',
+        port => DATA_PORT,
+    );
+
+    $self->stash(districts => $r);
+    $self->render(template => 'base/objects');
+}
+
+
+
 1;
