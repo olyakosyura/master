@@ -65,7 +65,7 @@ sub startup {
 
     $auth->get('/')->to("builder#index");
     $auth->get('/objects')->to("builder#objects");
-    $auth->get('/users')->to(cb => sub { shift->render(template => 'base/users'); });
+    $auth->get('/users')->to("builder#users");
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
 
     $auth->any('/*any' => { any => '' } => sub {

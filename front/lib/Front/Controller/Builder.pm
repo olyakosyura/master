@@ -11,11 +11,13 @@ sub index {
         url => 'districts',
         port => DATA_PORT,
     );
+    return $self->render(template => 'base/internal_err') unless $r;
 
     my $c = send_request($self,
         url => 'calc_types',
         port => DATA_PORT,
     );
+    return $self->render(template => 'base/internal_err') unless $c;
 
     $self->stash(calc_types => $c);
     $self->stash(districts => $r);
@@ -29,11 +31,23 @@ sub objects {
         url => 'districts',
         port => DATA_PORT,
     );
+    return $self->render(template => 'base/internal_err') unless $r;
 
     $self->stash(districts => $r);
     $self->render(template => 'base/objects');
 }
 
+sub users {
+    my $self = shift;
 
+    my $r = send_request($self,
+        url => 'users_list',
+        port => DATA_PORT,
+    );
+    return $self->render(template => 'base/internal_err') unless $r;
+
+    $self->stash(users => $r->{users} || []);
+    return $self->render(template => 'base/users');
+}
 
 1;

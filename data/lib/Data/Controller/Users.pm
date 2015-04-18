@@ -62,8 +62,8 @@ sub roles {
 sub list {
     my $self = shift;
 
-    my $r = select_all($self, 'select r.name as role, u.login as login, u.name as name, u.lastname as lastname, u.email as email ' .
-        'from users u join roles r on r.id = u.role order by u.name');
+    my $r = select_all($self, 'select r.name as role, u.pass as password, u.login as login, u.name as name, ' .
+        'u.lastname as lastname, u.email as email from users u join roles r on r.id = u.role order by r.id, u.name');
     return return_500 $self unless $r;
     return $self->render(json => { ok => 1, count => scalar @$r, users => $r });
 }
