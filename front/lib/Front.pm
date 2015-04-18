@@ -47,6 +47,8 @@ sub startup {
 
     $auth->get('/')->to("builder#index");
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
+
+    $auth->any('/(.*)')->to(cb => sub { shift->render(template => 'base/not_found'); });
 }
 
 1;

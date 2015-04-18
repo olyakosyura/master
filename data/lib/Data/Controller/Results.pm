@@ -627,6 +627,8 @@ sub render_xlsx {
     my %print_if_building = map { $_ => 1 } qw( contract_id company_name address district building_cost );
 
     my $worksheet = $workbook->add_worksheet();
+    $worksheet->freeze_panes(1,4);
+
     my $last_building_id = -100500;
     my $xls_row = 0;
     for my $row (-1 .. @$content - 1) {
