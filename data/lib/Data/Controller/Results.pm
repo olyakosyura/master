@@ -533,7 +533,7 @@ sub add_content {
 }
 
 sub render_xlsx {
-    my ($self, $content, $workbook, $calc_type_required) = @_;
+    my ($self, $content, $workbook, $need_calcs) = @_;
 
     my $header_bg_color = $workbook->set_custom_color(9, 201, 194, 194);
     my $splitter_bg_color = $workbook->set_custom_color(10, 230, 223, 223);
@@ -555,23 +555,27 @@ sub render_xlsx {
             shrink => 1,
             align => 'center',
             valign => 'vcenter',
+            num_format => '# ##0',
         },
         float => {
             align => 'center',
             valign => 'vcenter',
+            num_format => '# ##0.00',
         },
         year => {
             align => 'center',
             valign => 'vcenter',
+            num_format => '0',
         },
         money => {
             align => 'center',
             valign => 'vcenter',
+            num_format => '# ##0.00',
         },
         percent => {
-            num_format => '##\%;[Red](##\%)',
             align => 'center',
             valign => 'vcenter',
+            num_format => '0.00%',
         },
         building_splitter => {
             bold => 1,
@@ -582,83 +586,170 @@ sub render_xlsx {
     my %styles_cache = map { $_ => $workbook->add_format(%{$styles{$_}}) } keys %styles;
     my %splitter_styles_cache = map { $_ => $workbook->add_format(%{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
 
-    my %fields = (
-        # mysql name             header_text        style       column_width
-        contract_id         => [ contract_id,       'integer',  10, ],
-        company_name        => [ company_name,      'text',     50, ],
-        address             => [ address,           'text',     40, ],
-        district            => [ district,          'text',     10, ],
-        object_name         => [ object_name,       'text',     50, ],
-        category_name       => [ category,          'text',     30, ],
-        characteristic      => [ characteristic,    'text',     30, ],
-        count               => [ count,             'float',    10, ],
-        size                => [ size,              'integer',  10, ],
-        isolation_type      => [ isolation_type,    'text',     30, ],
-        laying_method       => [ laying_method,     'text',     20, ],
-        install_year        => [ install_year,      'year',     10, ],
-        reconstruction_year => [ reconstruction_year, 'year',   10, ],
-        wear                => [ wear,              'percent',  10, ],
-        cost                => [ cost,              'money',    10, ],
-        building_cost       => [ building_cost,     'money',    10, ],
-        usage_limit         => [ usage_limit,       'integer',  10, ],
-        calc_type           => [ calc_type,         'text',     30, ],
+    my @fields = (
+        {
+            mysql_name => 'contract_id',
+            header_text => contract_id,
+            style => 'integer',
+            col_width => 10,
+            print_in_header => 1,
+        }, {
+            mysql_name => 'company_name',
+            header_text => company_name,
+            style => 'text',
+            col_width => 50,
+            print_in_header => 1,
+        }, {
+            mysql_name => 'address',
+            header_text => address,
+            style => 'text',
+            col_width => 40,
+            print_in_header => 1,
+        }, {
+            mysql_name => 'district',
+            header_text => district,
+            style => 'text',
+            col_width => 10,
+            print_in_header => 1,
+        }, {
+            mysql_name => 'object_name',
+            header_text => object_name,
+            style => 'text',
+            col_width => 50,
+        }, {
+            mysql_name => 'category_name',
+            header_text => category,
+            style => 'text',
+            col_width => 30,
+        }, {
+            mysql_name => 'characteristic',
+            header_text => characteristic,
+            style => 'text',
+            col_width => 30,
+        }, {
+            mysql_name => 'building_characteristic',
+            style => 'text',
+            merge_with => 'characteristic',
+            print_in_header => 1,
+            only_in_header => 1,
+        }, {
+            mysql_name => 'count',
+            header_text => count,
+            style => 'float',
+            col_width => 10,
+        }, {
+            mysql_name => 'size',
+            header_text => size,
+            style => 'integer',
+            col_width => 10,
+        }, {
+            mysql_name => 'isolation_type',
+            header_text => isolation_type,
+            style => 'text',
+            col_width => 40,
+        }, {
+            mysql_name => 'laying_method',
+            header_text => laying_method,
+            style => 'text',
+            col_width => 20,
+        }, {
+            mysql_name => 'install_year',
+            header_text => install_year,
+            style => 'year',
+            col_width => 10,
+        }, {
+            mysql_name => 'buiding_build_date',
+            style => 'year',
+            print_in_header => 1,
+            only_in_header => 1,
+            merge_with => 'install_year',
+        }, {
+            mysql_name => 'reconstruction_year',
+            header_text => reconstruction_year,
+            style => 'year',
+            col_width => 10,
+        }, {
+            mysql_name => 'building_heat_load',
+            header_text => building_heat_load,
+            style => 'float',
+            col_width => 10,
+            only_in_header => 1,
+            print_in_header => 1,
+        }, {
+            mysql_name => 'wear',
+            header_text => wear,
+            style => 'percent',
+            col_width => 10,
+        }, {
+            mysql_name => 'cost',
+            header_text => cost,
+            style => 'money',
+            col_width => 40,
+        }, {
+            mysql_name => 'building_cost',
+            style => 'money',
+            print_in_header => 1,
+            only_in_header => 1,
+            merge_with => 'cost',
+        }, {
+            mysql_name => 'usage_limit',
+            header_text => usage_limit,
+            style => 'integer',
+            col_width => 10,
+        }, {
+            mysql_name => 'calc_type',
+            header_text => calc_type,
+            style => 'text',
+            col_width => 30,
+            use_in_calc_only => 1,
+        }
     );
 
-    my @order = qw(
-        contract_id
-        company_name
-        address
-        district
-        object_name
-        category_name
-        characteristic
-        count
-        size
-        isolation_type
-        laying_method
-        install_year
-        reconstruction_year
-        wear
-        building_cost
-        cost
-        usage_limit
-    );
-
-    if ($calc_type_required) {
-        push @order, 'calc_type';
+    if (!$need_calcs) {
+        @fields = grep { not $_->{use_in_calc_only} } @fields;
     }
 
-    my %skip_if_object = map { $_ => 1 } qw( building_cost contract_id );
-    my %print_if_building = map { $_ => 1 } qw( contract_id company_name address district building_cost );
+    my %merges = map { my $v = $_->{merge_with}; $v => (grep { $_->{mysql_name} eq $v } @fields) } grep { $_->{merge_with} } @fields;
+    my $i = 0;
+    for (@fields) {
+        $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}->{index} : $i++;
+    }
 
     my $worksheet = $workbook->add_worksheet();
     $worksheet->freeze_panes(1,4);
 
+    my $building_changed = 0;
     my $last_building_id = -100500;
     my $xls_row = 0;
-    for my $row (-1 .. @$content - 1) {
-        if ($row >= 0 && $last_building_id != $content->[$row]{building_cost}) {
-            $last_building_id = $content->[$row]{building_cost};
-            for my $index (0 .. @order - 1) {
-                unless ($print_if_building{$order[$index]}) {
-                    $worksheet->write($xls_row, $index, undef, $splitter_styles_cache{$fields{$order[$index]}->[1]});
-                } else {
-                    $worksheet->write($xls_row, $index, $content->[$row]{$order[$index]}, $splitter_styles_cache{$fields{$order[$index]}->[1]});
+
+    for (my $i = -1; $i < @$content;) {
+        my $row = $content->[$i] if $i >= 0;
+        for my $col (0 .. @fields - 1) {
+            my $rule = $fields[$col];
+            if ($i == -1) {
+                unless ($rule->{merge_with}) {
+                    $worksheet->set_column($col, $col, $rule->{col_width});
+                    $worksheet->write($xls_row, $rule->{index}, $rule->{header_text}, $styles_cache{header});
                 }
-            }
-            ++$xls_row;
-        }
-        for my $index (0 .. @order - 1) {
-            my $f = $fields{$order[$index]};
-            if ($row == -1) {
-                $worksheet->set_column($index, $index, $f->[2]);
-                $worksheet->write($xls_row, $index, $f->[0], $styles_cache{'header'});
+            } elsif ($building_changed) {
+                my $val = $row->{$rule->{mysql_name}} if $rule->{print_in_header};
+                $worksheet->write($xls_row, $rule->{index}, $val, $splitter_styles_cache{$rule->{style}});
             } else {
-                next if $skip_if_object{$order[$index]};
-                $worksheet->write($xls_row, $index, $content->[$row]{$order[$index]}, $styles_cache{$f->[1]});
+                $worksheet->write($xls_row, $rule->{index}, $row->{$rule->{mysql_name}}, $styles_cache{$rule->{style}})
+                    unless $rule->{only_in_header}
             }
         }
+
         ++$xls_row;
+        ++$i unless $building_changed;
+
+        if (!$row || $last_building_id != $row->{contract_id}) {
+            $building_changed = 1;
+            $last_building_id = $row ? $row->{contract_id} : $content->[0]{contract_id};
+        } else {
+            $building_changed = 0;
+        }
+
     }
 }
 
@@ -729,6 +820,9 @@ sub build {
             o.reconstruction_year as reconstruction_year,
             o.wear as wear,
             o.cost as cost,
+            bm.characteristic as building_characteristic,
+            bm.build_date as buiding_build_date,
+            bm.heat_load as building_heat_load,
             o.last_usage_limit as usage_limit
             %s
         from objects o

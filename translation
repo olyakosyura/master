@@ -16,6 +16,7 @@ cost = Рыночная стоимость
 building_cost = Рыночная стоимость здания
 usage_limit = Оставшийся срок полезного использования
 calc_type = Тип расчета
+building_heat_load = Тепловая нагрузка
 
 xlsx_default_title = Сгенерированный отчет
 
