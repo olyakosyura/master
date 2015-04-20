@@ -938,8 +938,8 @@ table, table td {
 
 .row-button1 .col-right{
 	width: 43%;
-	float: right;
-	text-align: left;
+	float: left;
+	text-align: right;
 	position: relative;
 }
 .row-button1 .col-right label span{
@@ -974,8 +974,8 @@ table, table td {
 
 .row-button1 .col-left{
 	width: 43%;
-	float: left;
-	text-align: right;
+	float: right;
+	text-align: left;
 	position: relative;
 }
 .row-button1 .col-left input{
