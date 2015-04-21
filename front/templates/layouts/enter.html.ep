@@ -27,7 +27,7 @@
   <section class="intro-sign-in">
      <article>
             <h6>АВТОРИЗИРУЙТЕСЬ ПОЖАЛУЙТА</h6>
-            <form id="frm-login">
+            <form id="frm-login" onkeypress="usl(event)">
                 <div class="row-input">
                     <div class="col-left">
                         <label for="intro-login" id="intro-login">Логин</label>
@@ -39,6 +39,7 @@
                     </div>
                 </div>
 %= javascript begin
+                    function usl(e) { if(e.keyCode == 13) login(); }
                     function login() {
                         var $frm = $("#frm-login"),
                             $err = $("#frm-error"),

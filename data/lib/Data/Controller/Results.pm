@@ -321,8 +321,9 @@ sub add_categories {
     );
 
     my @keys = sort keys %fields;
+    my %categories = map { my $v = $_->{name}; utf8::decode($v); $v => $_->{id} } @{ select_all $self, 'select name, id from categories_names' };
     my $q = 'insert into categories (' . join(',', @fields{@keys}) . ') values (' . join(',', map { '?' } @keys) . ')';
-    my %categories = map { my $v = $_->{object_name}; utf8::decode($v); $v => $_->{id} }
+    my %objects_names = map { my $v = $_->{object_name}; utf8::decode($v); $v => $_->{id} }
         @{ select_all $self, 'select object_name, id from categories' };
 
     my $rows = 0;
@@ -337,11 +338,13 @@ sub add_categories {
             utf8::decode($data[0]);
             if ($e > -1) {
                 push @errors, { line => $row, error => "Cell $e is empty" };
-            } elsif (defined $categories{$data[0]}) {
+            } elsif (defined $objects_names{$data[0]}) {
                 push @errors, { line => $row, error => "Category $data[0] already exists" };
-            } else {
+            } elsif (defined $categories{$data[1]}) {
                 ++$rows;
-                execute_query($self, $q, @data);
+                execute_query($self, $q, $data[0], $categories{$data[1]});
+            } else {
+                push @errors, { line => $row, error => "Category $data[1] not found in categories_names" };
             }
         }
     }
@@ -532,8 +535,22 @@ sub add_content {
     return $self->render(json => { ok => 1, count => $rows, deleted => $deleted, errors => { count => scalar @errors, errors => \@errors } });
 }
 
+sub rebuild_cache {
+    my $self = shift;
+
+    my %tables = (
+        amortization_calculations => 'build_amortization',
+    );
+
+    for my $tbl_name (keys %tables) {
+        execute_query $self, "call $tables{$tbl_name}()";
+    }
+
+    return $self->render(json => { ok => 1 });
+}
+
 sub render_xlsx {
-    my ($self, $content, $workbook, $need_calcs) = @_;
+    my ($self, $content, $workbook, $calc_type) = @_;
 
     my $header_bg_color = $workbook->set_custom_color(9, 201, 194, 194);
     my $splitter_bg_color = $workbook->set_custom_color(10, 230, 223, 223);
@@ -575,7 +592,7 @@ sub render_xlsx {
         percent => {
             align => 'center',
             valign => 'vcenter',
-            num_format => '0.00%',
+            num_format => '#"%"',
         },
         building_splitter => {
             bold => 1,
@@ -670,11 +687,11 @@ sub render_xlsx {
             col_width => 10,
         }, {
             mysql_name => 'building_heat_load',
-            header_text => building_heat_load,
             style => 'float',
             col_width => 10,
             only_in_header => 1,
             print_in_header => 1,
+            merge_with => 'count',
         }, {
             mysql_name => 'wear',
             header_text => wear,
@@ -697,17 +714,47 @@ sub render_xlsx {
             style => 'integer',
             col_width => 10,
         }, {
-            mysql_name => 'calc_type',
-            header_text => calc_type,
-            style => 'text',
+            header_text => amortization_norma,
+            mysql_name => 'am_norma',
+            style => 'money',
             col_width => 30,
-            use_in_calc_only => 1,
+            calc_type => 'amortization',
+        }, {
+            header_text => amortization_value,
+            mysql_name => 'am_calc_amort',
+            style => 'money',
+            col_width => 30,
+            calc_type => 'amortization',
+        }, {
+            mysql_name => 'amortization_index',
+            mysql_name => 'am_u_norma',
+            header_text => amortization_usage,
+            style => 'integer',
+            col_width => 30,
+            calc_type => 'amortization',
+        }, {
+            header_text => amortization_usage_limit,
+            mysql_name => 'am_usage_limit',
+            style => 'integer',
+            col_width => 30,
+            calc_type => 'amortization',
+        }, {
+            header_text => amortization_total,
+            mysql_name => 'am_year_amort',
+            style => 'percent',
+            col_width => 30,
+            calc_type => 'amortization',
+        }, {
+            header_text => amortization_per_year,
+            mysql_name => 'am_amort',
+            style => 'money',
+            col_width => 30,
+            calc_type => 'amortization',
         }
     );
 
-    if (!$need_calcs) {
-        @fields = grep { not $_->{use_in_calc_only} } @fields;
-    }
+    $calc_type = "" unless defined $calc_type;
+    @fields = grep { !$_->{calc_type} || $_->{calc_type} eq $calc_type } @fields;
 
     my %merges = map { my $v = $_->{merge_with}; $v => (grep { $_->{mysql_name} eq $v } @fields) } grep { $_->{merge_with} } @fields;
     my $i = 0;
@@ -718,12 +765,18 @@ sub render_xlsx {
     my $worksheet = $workbook->add_worksheet();
     $worksheet->freeze_panes(1,4);
 
-    my $building_changed = 0;
     my $last_building_id = -100500;
     my $xls_row = 0;
 
     for (my $i = -1; $i < @$content;) {
         my $row = $content->[$i] if $i >= 0;
+
+        my $building_changed = 0;
+        if ($row && $last_building_id != $row->{contract_id}) {
+            $building_changed = 1;
+            $last_building_id = $row->{contract_id};
+        }
+
         for my $col (0 .. @fields - 1) {
             my $rule = $fields[$col];
             if ($i == -1) {
@@ -742,14 +795,6 @@ sub render_xlsx {
 
         ++$xls_row;
         ++$i unless $building_changed;
-
-        if (!$row || $last_building_id != $row->{contract_id}) {
-            $building_changed = 1;
-            $last_building_id = $row ? $row->{contract_id} : $content->[0]{contract_id};
-        } else {
-            $building_changed = 0;
-        }
-
     }
 }
 
@@ -791,15 +836,35 @@ sub build {
         $calc_type_required = 0;
     }
 
+    my %calc_types = (
+        # XXX: Hardcoded with calc_types table!!!
+        amortization => {
+            select => 'calcs.norma as am_norma, calcs.calculated_amortization as am_calc_amort, ' .
+                      'calcs.usage_norma as am_u_norma, calcs.usage_limit as am_usage_limit, ' .
+                      'calcs.year_amortization as am_year_amort, calcs.amortization as am_amort',
+            join => 'join amortization_calculations calcs on calcs.object_id = o.id',
+        },
+        diagnostic => {
+        },
+        expluatation => {
+        },
+        service => {
+        },
+        cur_repair => {
+        },
+        glob_repair => {
+        },
+        investment => {
+        },
+    );
+
     if ($calc_type_required && !defined $args->{calc_type}) {
-        # TODO: Not really implmented
         return $self->render(json => { status => 400, error => "calc_type argument is required" });
     }
 
-    my @extra_args = (
-        ', ct.name as calc_type',
-        sprintf('join calc_types ct on ct.id %s ?', $args->{calc_type} && $args->{calc_type} == -1 ? '>' : '='),
-    );
+    if ($calc_type_required && !$calc_types{$args->{calc_type}}) {
+        return $self->render(json => { status => 400, error => "calc_type is unknown" });
+    }
 
     my $sql_stat = <<SQL;
         select
@@ -809,7 +874,7 @@ sub build {
             c.name as company_name,
             b.name as address,
             cat.object_name as object_name,
-            cat.category_name as category_name,
+            cat_n.name as category_name,
             charac.name as characteristic,
             o.size as size,
             o.characteristic_value as count,
@@ -830,6 +895,7 @@ sub build {
         join companies c on c.id = b.company_id
         join districts d on d.id = c.district_id
         join categories cat on cat.id = o.object_name
+        join categories_names cat_n on cat.category_name = cat_n.id
         %s
         left outer join characteristics charac on charac.id = o.characteristic
         left outer join isolations i on i.id = o.isolation
@@ -838,9 +904,14 @@ sub build {
         %s
         order by b.id, o.id
 SQL
-    my $r = select_all($self,
-        sprintf($sql_stat, ($calc_type_required ? @extra_args : ('', '')), $sql_part),
-        ($calc_type_required ? $args->{calc_type} : ()), $sql_arg);
+    my ($calc_stat, $calc_join) = ('', '');
+    if ($calc_type_required) {
+        my $t = $calc_types{$args->{calc_type}};
+        $calc_stat = ',' . $t->{select};
+        $calc_join = $t->{join};
+    }
+
+    my $r = select_all($self, sprintf($sql_stat, $calc_stat, $calc_join, $sql_part), $sql_arg);
 
     $workbook->set_properties(
         title => xlsx_default_title,
@@ -849,7 +920,7 @@ SQL
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
     );
 
-    $self->render_xlsx($r, $workbook, $calc_type_required);
+    $self->render_xlsx($r, $workbook, $args->{calc_type});
     $workbook->close;
 
     $f->unlink_on_destroy(0);

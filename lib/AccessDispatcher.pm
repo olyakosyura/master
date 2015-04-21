@@ -119,6 +119,12 @@ my %access_control = (
         access => 'full',
         roles => 'user',
     },
+
+    'rebuild_cache' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'manager',
+    },
 );
 
 sub check_session {

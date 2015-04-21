@@ -27,6 +27,7 @@ sub startup {
     $r->get('/calc_types')->to('data#calc_types');
 
     $r->get('/build')->to('results#build');
+    $r->get('/rebuild_cache')->to('results#rebuild_cache');
     $r->post('/add_buildings')->to('results#add_buildings');
     $r->post('/add_categories')->to('results#add_categories');
     $r->post('/add_content')->to('results#add_content');
