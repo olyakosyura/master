@@ -570,14 +570,14 @@ sub render_xlsx {
         },
         integer => {
             shrink => 1,
-            align => 'center',
+            align => 'right',
             valign => 'vcenter',
-            num_format => '# ##0',
+            num_format => '# ### ##0',
         },
         float => {
-            align => 'center',
+            align => 'right',
             valign => 'vcenter',
-            num_format => '# ##0.00',
+            num_format => '# ### ##0.00',
         },
         year => {
             align => 'center',
@@ -585,12 +585,12 @@ sub render_xlsx {
             num_format => '0',
         },
         money => {
-            align => 'center',
+            align => 'right',
             valign => 'vcenter',
             num_format => '# ##0.00',
         },
         percent => {
-            align => 'center',
+            align => 'right',
             valign => 'vcenter',
             num_format => '#"%"',
         },
@@ -663,12 +663,12 @@ sub render_xlsx {
             mysql_name => 'isolation_type',
             header_text => isolation_type,
             style => 'text',
-            col_width => 40,
+            col_width => 20,
         }, {
             mysql_name => 'laying_method',
             header_text => laying_method,
             style => 'text',
-            col_width => 20,
+            col_width => 30,
         }, {
             mysql_name => 'install_year',
             header_text => install_year,
@@ -700,11 +700,11 @@ sub render_xlsx {
         }, {
             mysql_name => 'cost',
             header_text => cost,
-            style => 'money',
+            style => 'integer',
             col_width => 40,
         }, {
             mysql_name => 'building_cost',
-            style => 'money',
+            style => 'integer',
             print_in_header => 1,
             only_in_header => 1,
             merge_with => 'cost',
@@ -716,13 +716,13 @@ sub render_xlsx {
         }, {
             header_text => amortization_norma,
             mysql_name => 'am_norma',
-            style => 'money',
+            style => 'float',
             col_width => 30,
             calc_type => 'amortization',
         }, {
             header_text => amortization_value,
             mysql_name => 'am_calc_amort',
-            style => 'money',
+            style => 'float',
             col_width => 30,
             calc_type => 'amortization',
         }, {
@@ -741,13 +741,13 @@ sub render_xlsx {
         }, {
             header_text => amortization_total,
             mysql_name => 'am_year_amort',
-            style => 'percent',
+            style => 'float',
             col_width => 30,
             calc_type => 'amortization',
         }, {
             header_text => amortization_per_year,
             mysql_name => 'am_amort',
-            style => 'money',
+            style => 'float',
             col_width => 30,
             calc_type => 'amortization',
         }
