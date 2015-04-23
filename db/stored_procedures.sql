@@ -17,6 +17,7 @@ begin
         JOIN amortization_indexes i ON i.category_id = c.category_name;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
+    START TRANSACTION;
     OPEN cur;
 
     TRUNCATE `amortization_calculations`;
@@ -61,7 +62,64 @@ begin
         ) VALUES (id, norma, ca, val, ul, ya, am);
     END LOOP;
 
+    COMMIT;
     CLOSE cur;
 end;$$
+
+DROP PROCEDURE IF EXISTS build_diagnostic; $$
+
+CREATE PROCEDURE build_diagnostic()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE id, name, subtype, s INT DEFAULT NULL;
+
+    DECLARE cur CURSOR FOR
+        SELECT o.id, c.category_name, o.objects_subtype, o.size
+        FROM objects o
+        JOIN categories c ON c.id = o.object_name;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    START TRANSACTION;
+
+    TRUNCATE `diagnostic_calculations`;
+
+    OPEN cur;
+    read_loop: LOOP
+        SET done = 0;
+        SET @a = NULL;
+        SET @b = NULL;
+
+        FETCH cur INTO id, name, subtype, s;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        SELECT diametr
+        FROM diagnostic_indexes
+        WHERE category_id = name AND (object_subtype IS NULL OR object_subtype = subtype) AND diametr <= s
+        ORDER BY diametr DESC LIMIT 1 INTO @a;
+
+        SELECT diametr
+        FROM diagnostic_indexes
+        WHERE category_id = name AND (object_subtype IS NULL OR object_subtype = subtype) AND diametr > s
+        ORDER BY diametr ASC LIMIT 1 INTO @b;
+
+        IF s IS NULL THEN
+            SET @c = s;
+        ELSEIF @a IS NULL OR s = @b THEN
+            SET @c = @b;
+        ELSEIF @b IS NULL OR s = @a THEN
+            SET @c = @a;
+        ELSE
+            SELECT (SIGN(s - ((@b + @a) / 2)) * (@b - @a) + @a + @b) / 2 INTO @c;
+        END IF;
+
+        INSERT INTO diagnostic_calculations(object_id, diametr) VALUES (id, @c);
+    END LOOP;
+
+    COMMIT;
+    CLOSE cur;
+END;$$
 
 DELIMITER ;

@@ -25,3 +25,14 @@ amortization_usage = Нормативный срок использования,
 amortization_usage_limit = Оставшийся срок полезного использования, лет
 amortization_total = Годовая норма амортизации (%)
 amortization_per_year = Амортизация, руб. в год
+
+diagnostic_diametr = Диаметр
+diagnostic_ztr = ЗТР (чел-ч)
+diagnostic_compensation = Оплата труда
+diagnostic_expluatation = Эксплуатация машин
+diagnostic_materials = Материалы
+diagnostic_overhead_cost = Накладные расходы
+diagnostic_profit = Сметная прибыль
+diagnostic_total = Итого (без НДС)
+diagnostic_nds = НДС 18%
+diagnostic_tatal_nds = Итого (в том числе НДС)

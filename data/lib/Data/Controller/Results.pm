@@ -539,7 +539,8 @@ sub rebuild_cache {
     my $self = shift;
 
     my %tables = (
-        amortization_calculations => 'build_amortization',
+        amortization => 'build_amortization',
+        diagnsotic => 'build_diagnostic',
     );
 
     for my $tbl_name (keys %tables) {
@@ -750,6 +751,66 @@ sub render_xlsx {
             style => 'float',
             col_width => 30,
             calc_type => 'amortization',
+        }, {
+            header_text => diagnostic_diametr,
+            mysql_name => 'dia_diametr',
+            style => 'integer',
+            col_width => 30,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_ztr,
+            mysql_name => 'dia_ztr',
+            style => 'float',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_compensation,
+            mysql_name => 'dia_compensation',
+            style => 'float',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_expluatation,
+            mysql_name => 'dia_expluatation',
+            style => 'float',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_materials,
+            mysql_name => 'dia_materials',
+            style => 'float',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_overhead_cost,
+            mysql_name => 'dia_overhead_cost',
+            style => 'float',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_profit,
+            mysql_name => 'dia_profit',
+            style => 'float',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_total,
+            mysql_name => 'dia_total',
+            style => 'money',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_nds,
+            mysql_name => 'dia_nds',
+            style => 'money',
+            col_width => 10,
+            calc_type => 'diagnostic',
+        }, {
+            header_text => diagnostic_tatal_nds,
+            mysql_name => 'dia_total_nds',
+            style => 'money',
+            col_width => 10,
+            calc_type => 'diagnostic',
         }
     );
 
@@ -845,6 +906,19 @@ sub build {
             join => 'join amortization_calculations calcs on calcs.object_id = o.id',
         },
         diagnostic => {
+            select => 'calcs.ztr * o.characteristic_value as dia_ztr, ' .
+                      'calcs_r.diametr as dia_diametr, ' .
+                      'calcs.compensation * o.characteristic_value as dia_compensation, ' .
+                      'calcs.expluatation * o.characteristic_value as dia_expluatation, ' .
+                      'calcs.materials * o.characteristic_value as dia_materials, ' .
+                      'calcs.overhead_cost * o.characteristic_value as dia_overhead_cost, ' .
+                      'calcs.profit * o.characteristic_value as dia_profit, ' .
+                      'calcs.total * o.characteristic_value as dia_total, ' .
+                      'calcs.nds * o.characteristic_value as dia_nds,' .
+                      '(calcs.nds + calcs.total) * o.characteristic_value as dia_total_nds',
+            join =>   'join diagnostic_calculations as calcs_r on calcs_r.object_id = o.id ' .
+                      'left outer join diagnostic_indexes as calcs on calcs.category_id = cat_n.id ' .
+                      'and (o.objects_subtype is null or calcs.object_subtype = o.objects_subtype) and calcs.diametr = calcs_r.diametr',
         },
         expluatation => {
         },
