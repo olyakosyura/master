@@ -71,7 +71,7 @@ DROP PROCEDURE IF EXISTS build_diagnostic; $$
 CREATE PROCEDURE build_diagnostic()
 BEGIN
     DECLARE done INT DEFAULT 0;
-    DECLARE id, name, subtype, s INT DEFAULT NULL;
+    DECLARE o_id, name, subtype, s INT DEFAULT NULL;
 
     DECLARE cur CURSOR FOR
         SELECT o.id, c.category_name, o.objects_subtype, o.size
@@ -88,22 +88,30 @@ BEGIN
         SET done = 0;
         SET @a = NULL;
         SET @b = NULL;
+        SET @i = NULL;
+        SET @j = NULL;
+        SET @k = NULL;
 
-        FETCH cur INTO id, name, subtype, s;
+        FETCH cur INTO o_id, name, subtype, s;
 
         IF done THEN
             LEAVE read_loop;
         END IF;
 
-        SELECT diametr
+        SELECT diametr, id INTO @a, @i
         FROM diagnostic_indexes
         WHERE category_id = name AND (object_subtype IS NULL OR object_subtype = subtype) AND diametr <= s
-        ORDER BY diametr DESC LIMIT 1 INTO @a;
+        ORDER BY diametr DESC LIMIT 1;
 
-        SELECT diametr
+        SELECT diametr, id INTO @b, @j
         FROM diagnostic_indexes
         WHERE category_id = name AND (object_subtype IS NULL OR object_subtype = subtype) AND diametr > s
-        ORDER BY diametr ASC LIMIT 1 INTO @b;
+        ORDER BY diametr ASC LIMIT 1;
+
+        SELECT id INTO @k
+        FROM diagnostic_indexes
+        WHERE category_id = name
+        ORDER BY id ASC LIMIT 1;
 
         IF s IS NULL THEN
             SET @c = s;
@@ -112,10 +120,18 @@ BEGIN
         ELSEIF @b IS NULL OR s = @a THEN
             SET @c = @a;
         ELSE
-            SELECT (SIGN(s - ((@b + @a) / 2)) * (@b - @a) + @a + @b) / 2 INTO @c;
+            SELECT (SIGN(s - ((@b + @a) / 2) + 0.001) * (@b - @a) + @a + @b) / 2 INTO @c;
         END IF;
 
-        INSERT INTO diagnostic_calculations(object_id, diametr) VALUES (id, @c);
+        IF @c IS NOT NULL THEN
+            IF @c = @a THEN
+                SET @k = @i;
+            ELSE
+                SET @k = @j;
+            END IF;
+        END IF;
+
+        INSERT INTO diagnostic_calculations(index_id, object_id, diametr) VALUES (@k, o_id, @c);
     END LOOP;
 
     COMMIT;

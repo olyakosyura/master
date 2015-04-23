@@ -916,9 +916,8 @@ sub build {
                       'calcs.total * o.characteristic_value as dia_total, ' .
                       'calcs.nds * o.characteristic_value as dia_nds,' .
                       '(calcs.nds + calcs.total) * o.characteristic_value as dia_total_nds',
-            join =>   'join diagnostic_calculations as calcs_r on calcs_r.object_id = o.id ' .
-                      'left outer join diagnostic_indexes as calcs on calcs.category_id = cat_n.id ' .
-                      'and (o.objects_subtype is null or calcs.object_subtype = o.objects_subtype) and calcs.diametr = calcs_r.diametr',
+            join =>   'left outer join diagnostic_calculations as calcs_r on calcs_r.object_id = o.id ' .
+                      'left outer join diagnostic_indexes as calcs on calcs.id = calcs_r.index_id',
         },
         expluatation => {
         },
@@ -981,8 +980,10 @@ SQL
     my ($calc_stat, $calc_join) = ('', '');
     if ($calc_type_required) {
         my $t = $calc_types{$args->{calc_type}};
-        $calc_stat = ',' . $t->{select};
-        $calc_join = $t->{join};
+        if ($t) {
+            $calc_stat = ',' . $t->{select};
+            $calc_join = $t->{join};
+        }
     }
 
     my $r = select_all($self, sprintf($sql_stat, $calc_stat, $calc_join, $sql_part), $sql_arg);
