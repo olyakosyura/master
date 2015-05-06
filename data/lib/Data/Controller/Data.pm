@@ -32,16 +32,19 @@ sub companies {
     my $args = $self->req->params->to_hash;
     my $q = defined $args && $args->{q} || undef;
     my $d = defined $args && $args->{district} || undef;
+    my $region = defined $args && $args->{region} || undef;
     $q = "%$q%" if $q;
 
     return $self->render(json => { status => 400, error => "invalid district" }) if defined $d && $d !~ /^\d+$/;
 
     my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d " . 
         "on d.id = c.district_id " . (defined $q ? "where c.name like ? " : "") .
-        (defined $d ? (defined $q ? "and" : "where") . " c.district_id=? " : "") . "order by c.name");
+        (defined $d ? (defined $q ? "and" : "where") . " c.district_id=? " : "") .
+        (defined $region ? (defined $q || defined $d ? "and" : "where") . " d.region=? " : "") . "order by c.name");
 
     push @args, $q if defined $q;
     push @args, $d if defined $d;
+    push @args, $region if defined $region;
     my $r = select_all @args;
 
     return return_500 $self unless $r;

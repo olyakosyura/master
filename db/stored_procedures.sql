@@ -46,7 +46,11 @@ begin
             SET ul = val - y + install_year;
         END IF;
 
-        IF ul IS NOT NULL THEN
+        IF ul < 0 THEN
+            SET ul = 0;
+        END IF;
+
+        IF ul IS NOT NULL AND ul > 0 THEN
             SET ya = 1 / ul;
             SET am = cost * ya;
         END IF;
@@ -110,7 +114,7 @@ BEGIN
 
         SELECT id INTO @k
         FROM diagnostic_indexes
-        WHERE category_id = name
+        WHERE category_id = name AND object_subtype IS NULL
         ORDER BY id ASC LIMIT 1;
 
         IF s IS NULL THEN
@@ -137,5 +141,48 @@ BEGIN
     COMMIT;
     CLOSE cur;
 END;$$
+
+DROP PROCEDURE IF EXISTS build_expluatation; $$
+
+CREATE PROCEDURE build_expluatation()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE b_id INT DEFAULT 0;
+    DECLARE ch VARCHAR(10) DEFAULT NULL;
+    DECLARE hl FLOAT DEFAULT NULL;
+
+    DECLARE cur CURSOR FOR
+        SELECT b.id, bm.characteristic, CEIL(bm.heat_load * 10) / 10 FROM buildings b LEFT OUTER JOIN buildings_meta bm ON bm.building_id = b.id;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    START TRANSACTION;
+
+    TRUNCATE `expluatation_calculations`;
+
+    OPEN cur;
+    read_loop: LOOP
+        SET done = 0;
+        SET hl = NULL;
+        SET ch = NULL;
+        SET @i_id = NULL;
+
+        FETCH cur INTO b_id, ch, hl;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        IF ch IS NOT NULL THEN
+            SELECT id INTO @i_id FROM expluatation_indexes WHERE characteristic = ch AND heat_load = hl;
+        END IF;
+
+        INSERT INTO expluatation_calculations(index_id, building_id) VALUES (@i_id, b_id);
+    END LOOP;
+
+    COMMIT;
+    CLOSE cur;
+END;$$
+
+
 
 DELIMITER ;

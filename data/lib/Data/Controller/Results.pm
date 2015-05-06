@@ -538,13 +538,14 @@ sub add_content {
 sub rebuild_cache {
     my $self = shift;
 
-    my %tables = (
-        amortization => 'build_amortization',
-        diagnsotic => 'build_diagnostic',
+    my @to_build = qw(
+        build_amortization
+        build_diagnostic
+        build_expluatation
     );
 
-    for my $tbl_name (keys %tables) {
-        execute_query $self, "call $tables{$tbl_name}()";
+    for my $f_name (@to_build) {
+        execute_query $self, "call $f_name()";
     }
 
     return $self->render(json => { ok => 1 });
@@ -578,7 +579,7 @@ sub render_xlsx {
         float => {
             align => 'right',
             valign => 'vcenter',
-            num_format => '# ### ##0.00',
+            num_format => '#\ ###\ ##0.00',
         },
         year => {
             align => 'center',
@@ -687,6 +688,13 @@ sub render_xlsx {
             style => 'year',
             col_width => 10,
         }, {
+            mysql_name => 'bm_reconstruction_date',
+            style => 'year',
+            col_width => 10,
+            only_in_header => 1,
+            print_in_header => 1,
+            merge_with => 'reconstruction_year',
+        }, {
             mysql_name => 'building_heat_load',
             style => 'float',
             col_width => 10,
@@ -767,7 +775,7 @@ sub render_xlsx {
             header_text => diagnostic_compensation,
             mysql_name => 'dia_compensation',
             style => 'float',
-            col_width => 10,
+            col_width => 30,
             calc_type => 'diagnostic',
         }, {
             header_text => diagnostic_expluatation,
@@ -811,6 +819,78 @@ sub render_xlsx {
             style => 'money',
             col_width => 10,
             calc_type => 'diagnostic',
+        }, {
+            header_text => expluatation_heat_load,
+            mysql_name => 'exp_heat_load',
+            style => 'float',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_ztr,
+            mysql_name => 'exp_ztr',
+            style => 'float',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_compensation,
+            mysql_name => 'exp_compensation',
+            style => 'float',
+            col_width => 30,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_materials,
+            mysql_name => 'exp_materials',
+            style => 'float',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_overhead_cost,
+            mysql_name => 'exp_overhead_cost',
+            style => 'float',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_profit,
+            mysql_name => 'exp_profit',
+            style => 'float',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_total,
+            mysql_name => 'exp_total',
+            style => 'money',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_nds,
+            mysql_name => 'exp_nds',
+            style => 'money',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
+        }, {
+            header_text => diagnostic_tatal_nds,
+            mysql_name => 'exp_total_nds',
+            style => 'money',
+            col_width => 10,
+            print_in_header => 1,
+            only_in_header => 1,
+            calc_type => 'expluatation',
         }
     );
 
@@ -821,6 +901,10 @@ sub render_xlsx {
     my $i = 0;
     for (@fields) {
         $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}->{index} : $i++;
+    }
+
+    if ($calc_type eq 'expluatation') {
+        map { $_->{only_in_header} = 1 } @fields;
     }
 
     my $worksheet = $workbook->add_worksheet();
@@ -838,23 +922,26 @@ sub render_xlsx {
             $last_building_id = $row->{contract_id};
         }
 
+        my $row_printed = 0;
         for my $col (0 .. @fields - 1) {
             my $rule = $fields[$col];
             if ($i == -1) {
                 unless ($rule->{merge_with}) {
                     $worksheet->set_column($col, $col, $rule->{col_width});
                     $worksheet->write($xls_row, $rule->{index}, $rule->{header_text}, $styles_cache{header});
+                    $row_printed = 1;
                 }
             } elsif ($building_changed) {
                 my $val = $row->{$rule->{mysql_name}} if $rule->{print_in_header};
                 $worksheet->write($xls_row, $rule->{index}, $val, $splitter_styles_cache{$rule->{style}});
-            } else {
-                $worksheet->write($xls_row, $rule->{index}, $row->{$rule->{mysql_name}}, $styles_cache{$rule->{style}})
-                    unless $rule->{only_in_header}
+                $row_printed = 1;
+            } elsif (not $rule->{only_in_header}) {
+                $worksheet->write($xls_row, $rule->{index}, $row->{$rule->{mysql_name}}, $styles_cache{$rule->{style}});
+                $row_printed = 1;
             }
         }
 
-        ++$xls_row;
+        ++$xls_row if $row_printed;
         ++$i unless $building_changed;
     }
 }
@@ -920,6 +1007,17 @@ sub build {
                       'left outer join diagnostic_indexes as calcs on calcs.id = calcs_r.index_id',
         },
         expluatation => {
+            select => 'calcs.ztr as exp_ztr, ' .
+                      'calcs.heat_load as exp_heat_load, ' .
+                      'calcs.compensation as exp_compensation, ' .
+                      'calcs.materials as exp_materials, ' .
+                      'calcs.overhead_cost as exp_overhead_cost, ' .
+                      'calcs.profit as exp_profit, ' .
+                      'calcs.total as exp_total, ' .
+                      'calcs.nds as exp_nds,' .
+                      '(calcs.nds + calcs.total) as exp_total_nds',
+            join =>   'join expluatation_calculations calcs_r on calcs_r.building_id = b.id ' .
+                      'left outer join expluatation_indexes as calcs on calcs.id = calcs_r.index_id',
         },
         service => {
         },
@@ -960,6 +1058,7 @@ sub build {
             o.cost as cost,
             bm.characteristic as building_characteristic,
             bm.build_date as buiding_build_date,
+            bm.reconstruction_date as bm_reconstruction_date,
             bm.heat_load as building_heat_load,
             o.last_usage_limit as usage_limit
             %s
@@ -969,12 +1068,11 @@ sub build {
         join districts d on d.id = c.district_id
         join categories cat on cat.id = o.object_name
         join categories_names cat_n on cat.category_name = cat_n.id
-        %s
         left outer join characteristics charac on charac.id = o.characteristic
         left outer join isolations i on i.id = o.isolation
         left outer join laying_methods l on l.id = o.laying_method
         left outer join buildings_meta bm on bm.building_id = b.id
-        %s
+        %s %s
         order by b.id, o.id
 SQL
     my ($calc_stat, $calc_join) = ('', '');

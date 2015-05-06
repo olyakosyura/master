@@ -36,3 +36,5 @@ diagnostic_profit = Сметная прибыль
 diagnostic_total = Итого (без НДС)
 diagnostic_nds = НДС 18%
 diagnostic_tatal_nds = Итого (в том числе НДС)
+
+expluatation_heat_load = Тепловая нагрузка

@@ -25,7 +25,7 @@ function request_content(base_url, skip_calc_type) {
     window.open(window.location.origin + base_url + '/cgi-bin/build?' + $.param(choosen_object), '_blank');
 }
 
-var elements_info = { districts: 'district', companies: 'company', buildings: 'building', objects: 'object' };
+var elements_info = { regions: 'region', districts: 'district', companies: 'company', buildings: 'building', objects: 'object' };
 function select_change_controller(elements, base_url) {
     for (var el = 0; el < elements.length; ++el) {
         var $next_elem = el == elements.length - 1 ? undefined : $("#" + elements[el + 1]),
