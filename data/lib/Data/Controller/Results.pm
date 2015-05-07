@@ -987,10 +987,8 @@ sub build {
         return $self->render(json => { status => 400, error => join(' or ', keys %sql_statements) . " not empty argument is required" });
     }
 
-    my $calc_type_required = 1;
-    if ($self->req->headers->referrer =~ m{/objects$}) {
-        $calc_type_required = 0;
-    }
+    my $calc_type = $args->{calc_type};
+    $calc_type = undef if $calc_type < 0;
 
     my %calc_types = (
         # XXX: Hardcoded with calc_types table!!!
@@ -1037,11 +1035,7 @@ sub build {
         },
     );
 
-    if ($calc_type_required && !defined $args->{calc_type}) {
-        return $self->render(json => { status => 400, error => "calc_type argument is required" });
-    }
-
-    if ($calc_type_required && !$calc_types{$args->{calc_type}}) {
+    if ($calc_type && !$calc_types{$calc_type}) {
         return $self->render(json => { status => 400, error => "calc_type is unknown" });
     }
 
@@ -1084,8 +1078,8 @@ sub build {
         order by b.id, o.id
 SQL
     my ($calc_stat, $calc_join) = ('', '');
-    if ($calc_type_required) {
-        my $t = $calc_types{$args->{calc_type}};
+    if ($calc_type) {
+        my $t = $calc_types{$calc_type};
         if ($t) {
             $calc_stat = ',' . $t->{select};
             $calc_join = $t->{join};
@@ -1101,7 +1095,7 @@ SQL
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
     );
 
-    $self->render_xlsx($r, $workbook, $args->{calc_type});
+    $self->render_xlsx($r, $workbook, $calc_type);
     $workbook->close;
 
     $f->unlink_on_destroy(0);
