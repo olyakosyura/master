@@ -988,7 +988,7 @@ sub build {
     }
 
     my $calc_type = $args->{calc_type};
-    $calc_type = undef if $calc_type < 0;
+    $calc_type = undef if $calc_type && $calc eq "undef";
 
     my %calc_types = (
         # XXX: Hardcoded with calc_types table!!!
