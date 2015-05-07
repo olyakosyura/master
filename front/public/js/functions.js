@@ -26,7 +26,7 @@ function request_content(base_url, skip_calc_type) {
 }
 
 var elements_info = { regions: 'region', districts: 'district', companies: 'company', buildings: 'building', objects: 'object' };
-function select_change_controller(elements, base_url) {
+function select_change_controller(elements, base_url, content_filter) {
     for (var el = 0; el < elements.length; ++el) {
         var $next_elem = el == elements.length - 1 ? undefined : $("#" + elements[el + 1]),
             $prev_elem = el == 0 ? undefined : $("#" + elements[el - 1]);
@@ -43,7 +43,8 @@ function select_change_controller(elements, base_url) {
                         $next_elem.val('-1').html($next_elem.find('option')[0]).trigger('refresh');
                     return;
                 }
-                choosen_object[elements_info[$(this).attr('id')]] = this.value;
+                var this_id = elements_info[$(this).attr('id')];
+                choosen_object[this_id] = this.value;
                 if ($next_elem) {
                     var index = $.inArray($next_elem.attr('id'), elements);
                     if (index >= 0) {
@@ -60,6 +61,8 @@ function select_change_controller(elements, base_url) {
                         success: function (data) {
                             var key = $next_elem.attr('id');
                             if (data[key]) {
+                                if (content_filter)
+                                    data[key] = content_filter(this_id, data[key]);
                                 $.each(data[key], function (index, item) {
                                     $next_elem.append('<option value="' + item.id + '">' + item.name + '</option>');
                                 });

@@ -956,6 +956,7 @@ sub build {
     my %sql_statements = (
         district => 'where d.id = ?',
         company => 'where c.id = ?',
+        company_multy => 'where c.id in ',
         building => 'where b.id = ?',
         object => 'where o.id = ?',
         region => 'where d.region = ?',
@@ -965,17 +966,24 @@ sub build {
     my $args = $self->req->params->to_hash;
 
     my $sql_part;
-    my $sql_arg;
+    my @sql_arg;
 
     for (@order) {
         if (defined $args->{$_}) {
+            my $v = $args->{$_};
+            if ($v =~ /,/ && $sql_statements{$_ . "_multy"}) {
+                @sql_arg = split ',', $v;
+                $sql_part = $sql_statements{$_ . "_multy"};
+                $sql_part .= "(" . join(',', ('?') x (scalar @sql_arg)) . ")";
+                last;
+            }
             $sql_part = $sql_statements{$_};
-            $sql_arg = $args->{$_};
+            @sql_arg = ($v);
             last;
         }
     }
 
-    unless (defined $sql_arg) {
+    unless (@sql_arg) {
         return $self->render(json => { status => 400, error => join(' or ', keys %sql_statements) . " not empty argument is required" });
     }
 
@@ -1084,7 +1092,7 @@ SQL
         }
     }
 
-    my $r = select_all($self, sprintf($sql_stat, $calc_stat, $calc_join, $sql_part), $sql_arg);
+    my $r = select_all($self, sprintf($sql_stat, $calc_stat, $calc_join, $sql_part), @sql_arg);
 
     $workbook->set_properties(
         title => xlsx_default_title,

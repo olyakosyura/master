@@ -6,6 +6,7 @@ use MainConfig qw( GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
     '/'          => 'user',
+    '/report_v2' => 'user',
     '/login'     => 'user',
     '/upload'    => 'admin',
     '/objects'   => 'manager',
