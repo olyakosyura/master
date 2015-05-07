@@ -13,4 +13,4 @@ BEGIN {
 
 # Start command line interface for application
 require Mojolicious::Commands;
-Mojolicious::Commands->start_app('Tests');
+Mojolicious::Commands->start_app('Logic');

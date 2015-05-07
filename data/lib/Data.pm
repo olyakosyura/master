@@ -23,8 +23,15 @@ sub startup {
     $r->get('/districts')->to('data#districts');
     $r->get('/companies')->to('data#companies');
     $r->get('/buildings')->to('data#buildings');
+    $r->get('/objects')->to('data#objects');
+    $r->get('/calc_types')->to('data#calc_types');
 
     $r->get('/build')->to('results#build');
+    $r->get('/rebuild_cache')->to('results#rebuild_cache');
+    $r->post('/add_buildings')->to('results#add_buildings');
+    $r->post('/add_categories')->to('results#add_categories');
+    $r->post('/add_content')->to('results#add_content');
+    $r->post('/add_buildings_meta')->to('results#add_buildings_meta');
 }
 
 1;

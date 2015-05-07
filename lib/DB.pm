@@ -15,6 +15,7 @@ our @EXPORT_OK = qw(
     select_all
     execute_query
     last_err
+    last_id
 );
 
 our %EXPORT_TAGS = (
@@ -29,9 +30,11 @@ BEGIN {
         DB_USER, DB_PASS,
         {
             AutoCommit => 1,
-            RaiseError => 1,
+            RaiseError => 0,
+            mysql_enable_utf8 => 1,
+            mysql_auto_reconnect => 1,
         }
-    ) or croak "Can't connect to 'test' database: " . DBI::errstr();
+    ) or croak "Can't connect to '" . DB_NAME . "' database: " . DBI::errstr();
 }
 
 sub last_err {
@@ -57,8 +60,14 @@ sub select_all {
 
 sub execute_query {
     my ($ctl, $query, @args) = @_;
-    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', @args));
+    $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { defined $_ ? $_ : "undef" } @args));
     return $dbh->do($query, undef, @args) or ($ctl->app->log->warn($dbh->errstr) and undef);
+}
+
+sub last_id {
+    my $ctl = shift;
+    my $row = select_row $ctl, 'select last_insert_id() as id';
+    return $row && $row->{id};
 }
 
 1;

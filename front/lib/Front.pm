@@ -1,21 +1,17 @@
 package Front;
 use Mojo::Base 'Mojolicious';
 
-use MainConfig qw( :all );
-use AccessDispatcher qw( check_access send_request );
+use AccessDispatcher qw( send_request role_less_then );
+use MainConfig qw( GENERAL_URL SESSION_PORT );
 
-sub check_params {
-    my $self = shift;
-
-    my %params;
-    my $p = $self->req->params->to_hash;
-    for (@_) {
-        $params{$_} = $p->{$_};
-        return $self->render(status => 400, json => { error => sprintf "%s field is required", ucfirst }) && undef unless $params{$_};
-    }
-
-    return \%params;
-}
+my %access_rules = (
+    '/'          => 'user',
+    '/report_v2' => 'user',
+    '/login'     => 'user',
+    '/upload'    => 'admin',
+    '/objects'   => 'manager',
+    '/users'     => 'admin',
+);
 
 # This method will run once at server start
 sub startup {
@@ -25,79 +21,60 @@ sub startup {
     $self->plugin('PODRenderer');
     $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
 
-    $self->routes->get('/login' => sub {
+    $self->routes->get('/login')->to(cb => sub {
         my $self = shift;
-
-        my $params = check_params $self, qw( login password );
-        return unless $params;
-
-        my $r = send_request($self,
-            method => 'get',
-            url => 'login',
-            port => SESSION_PORT,
-            args => {
-                login => $params->{login},
-                password => $params->{password},
-                user_agent => $self->req->headers->user_agent,
-            });
-
-        return _i_err $self unless $r;
-        return $self->render(status => 401, json => { error => "internal", description => "session: " . $r->{error} }) if !$r or $r->{error};
-
-        $self->session(session => $r->{session_id}, expires => 0);
-        return $self->render(json => { ok => 1 });
+        $self->stash(general_url => GENERAL_URL);
+        $self->render(template => 'base/login');
     });
 
     my $auth = $self->routes->under('/' => sub {
         my $self = shift;
         my $r = $self->req;
 
-        my $url = $r->url;
-        $url =~ m#^/([^?]*)#;
-
-        my $res = check_access $self, method => lc($r->method), url => $1;
-        return $self->render(status => 401, json => { error => 'unauthorized', description => $res->{error} }) && undef if $res->{error};
-
-        $self->stash(uid => $res->{uid}, role => $res->{role});
-        return $res->{granted} && $res->{granted} == 1;
-    });
-
-    $auth->get('/logout' => sub {
-        my $self = shift;
-
-        my $r = send_request($self,
+        my $res = send_request($self,
             method => 'get',
-            url => 'logout',
+            url => 'about',
             port => SESSION_PORT,
             args => {
                 user_agent => $self->req->headers->user_agent,
                 session_id => $self->session('session'),
-            });
+            },
+        );
+        return $self->render(status => 500) unless $res;
 
-        $self->session(expires => 1);
-        return $self->render(json => { ok => 1 }) if $r && not $r->{error};
-        return $self->_i_err unless $r;
-        return $self->render(status => 400, json => { error => "invalid", description => $r->{error} });
+        my $url = $r->url;
+        $url =~ s#^(/[^?]*)#$1#;
+
+        if (defined $res->{status}) {
+            return $self->render(template => 'base/login') && undef if $res->{status} == 401;
+            return $self->render(status => $res->{status}) && undef;
+        }
+
+        return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
+
+        $self->stash(general_url => GENERAL_URL, url => $url);
+        $self->stash(%$res); # login name lastname role uid email objects_count
+
+        if (!role_less_then $res->{role}, $access_rules{$url} || 'admin') {
+            $self->app->log->warn("Access to $url ($access_rules{$url} is needed) denied for $res->{login} ($res->{role})");
+            $self->render(template => 'base/not_found');
+            return undef;
+        }
+
+        return 1;
     });
+
+    $auth->get('/')->to("builder#index");
+    $auth->get('/objects')->to("builder#objects");
+    $auth->get('/users')->to("builder#users");
+    $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
+    $auth->get('/report_v2')->to("builder#report_v2");
 
     $auth->any('/*any' => { any => '' } => sub {
         my $self = shift;
-        my $page_name = $self->param('any');
-
-        my $response = send_request($self,
-            method => $self->req->method,
-            url => $page_name,
-            port => DATA_PORT,
-            args => $self->req->params->to_hash,
-            uid => $self->stash('uid'),
-            role => $self->stash('role'),
-        );
-
-        return $self->render(status => 500, json => { error => 'internal' }) unless $response;
-
-        my $status = $response->{status} || 200;
-        delete $response->{status};
-        return $self->render(status => $status, json => $response);
+        if ($self->param('any') ne 'login') {
+            $self->render(template => 'base/not_found');
+        }
     });
 }
 

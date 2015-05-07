@@ -16,6 +16,7 @@ sub startup {
     $r->get('/session')->to('index#check_session');
     $r->get('/login')->to('index#login');
     $r->get('/logout')->to('index#logout');
+    $r->get('/about')->to('index#about');
 }
 
 1;

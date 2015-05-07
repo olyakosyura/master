@@ -5,6 +5,7 @@ use warnings;
 
 use Carp qw(croak);
 use Mojo::UserAgent;
+use Mojo::Util qw( url_escape );
 use Data::Dumper::OneLine;
 
 use MainConfig qw( :all );
@@ -14,6 +15,8 @@ use base qw(Exporter);
 our @EXPORT_OK = qw(
     check_access
     send_request
+    check_session
+    role_less_then
 );
 
 our %EXPORT_TAGS = (
@@ -69,16 +72,58 @@ my %access_control = (
         roles  => 'user',
     },
 
+    'objects' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'user',
+    },
+
     'build'    => {
         method => 'get',
         access => 'Authorized',
         roles  => 'user',
     },
 
+    'xls/add_buildings' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
+    },
+
+    'xls/add_content' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
+    },
+
+    'xls/add_buildings_meta' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
+    },
+
+    'xls/add_categories' => {
+        method => 'post',
+        access => 'Authorized',
+        roles => 'manager',
+    },
+
     'session' => {
         method => 'any',
         access => 'full',
         roles  => 'user',
+    },
+
+    'about' => {
+        method => 'get',
+        access => 'full',
+        roles => 'user',
+    },
+
+    'rebuild_cache' => {
+        method => 'get',
+        access => 'Authorized',
+        roles => 'manager',
     },
 );
 
@@ -97,8 +142,8 @@ sub check_session {
         port => SESSION_PORT,
         args => { session_id => $sid, user_agent => $ua });
 
-    return { error => 'Internal: check_session' } unless $resp;
-    return { error => $resp->{error} } if defined $resp->{error};
+    return { error => 'Internal: check_session', status => 500 } unless $resp;
+    return { error => $resp->{error}, status => ($resp->{status} || 500) } if defined $resp->{error};
 
     return { logged => 1, uid => $resp->{uid}, role => $resp->{role} };
 }
@@ -123,7 +168,7 @@ sub check_access {
     my ($url, $method) = @args{qw( url method )};
     $inst->app->log->debug("Check access for url '$url', method '$method'");
 
-    return { error => "Can't find access rules for $url" } unless defined $access_control{$url};
+    return { error => 'not found', description => "Can't find access rules for $url", status => 404 } unless defined $access_control{$url};
 
     my $r = $access_control{$url};
     return { error => "Unsupported request method for $url" }
@@ -160,8 +205,8 @@ sub send_request {
         url => undef,
         port => undef,
         uid => undef,
-        role => undef,
-        args => {},
+        data => undef,
+        headers => undef,
         @_,
     );
 
@@ -176,14 +221,20 @@ sub send_request {
 
     my $ua = Mojo::UserAgent->new();
 
-    $args{args}->{uid} = $args{uid} if $args{uid};
-    $args{args}->{role} = $args{role} if $args{role};
+    $ua->on(start => sub {
+        my ($ua, $tx) = @_;
+        $tx->req->headers->header(%{$args{headers}});
+    }) if $args{headers};
 
     map { delete $args{args}->{$_} unless defined $args{args}->{$_} } keys %{$args{args}};
     $inst->app->log->debug(sprintf "Sending request [method: %s] [url: %s] [port: %d] [args: %s]",
         uc($args{method}), $args{url}, $args{port}, Dumper $args{args});
 
-    my @ua_args = ($url => json => $args{args});
+    if ($args{args}) {
+        $url->query($args{args});
+    }
+
+    my @ua_args = ($url => { 'Content-Type' => $inst->req->headers->content_type } => $args{data});
     my %switch = (
         get => sub { $url->query(%{$args{args}}); return $ua->get($url); },
         post    => sub { return $ua->post(@ua_args); },
@@ -194,9 +245,11 @@ sub send_request {
     my $s = $switch{lc $args{method}};
     croak "unknown metod specified" unless defined $s;
 
-    my $resp = $s->()->res->json();
+    my $r = $s->()->res;
+    my $resp = $r->json;
     unless (defined $resp) {
         $inst->app->log->warn("Response is undefined");
+        $resp = { status => $r->code, error => 'response is unknown', description => $r->message };
     } else {
         $inst->app->log->debug("Response: " . Dumper($resp));
     }

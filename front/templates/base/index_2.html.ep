@@ -1,0 +1,86 @@
+% layout 'index';
+
+<!-- report-request-form -->
+<div class="report-request-form">
+    <h3>Форма запроса отчета</h3>
+    <!-- sub-menu -->
+    <ul class="sub-menu-main">
+        <li><a href="<%= $general_url %>">Запрос по адресу</a></li>
+        <li class="active"><a href="#" onclick="return false;">Запрос по организации</a></li>
+    </ul>
+    <!-- /sub-menu -->
+    <form>
+      <!--  -->
+      <label for="region">Регион</label>
+      <div>
+% my $i = 0; my $current = "undef";
+% my %regions = map { $_->{region} => $_->{region} } @{$districts->{districts}};
+        <select name="region" id="regions">
+          <option>Выберете регион</option>
+% for (sort keys %regions) {
+          <option value="<%= $regions{$_} %>" <%= $_ eq $current ? "selected" : "" %>><%= $_ %></option>
+% }
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="organization">Организация</label>
+      <div>
+        <select name="organization" id="companies">
+          <option value="-1">Выберете организацию</option>
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="type-of-expenditure">Вид расходов</label>
+      <div>
+        <select name="type-of-expenditure" id="calc_types">
+          <option value="undef">(без расчета)</option>
+% for my $c (@{$calc_types->{types}}) {
+          <option value="<%= $c->{id} %>"><%= $c->{name} %></option>
+% }
+        </select>
+      </div>
+      <!-- / -->
+      <p class="row-button">
+          <a href="#" onclick="request_content('<%= $general_url %>'); return false;">Сформировать</a>
+      </p>
+    </form>
+</div>
+<!-- /report-request-form -->
+<!-- about-service -->
+       <div class="about-service">
+          <h4><a href="#"><span></span></a>О сервисе</h4>
+          <div>
+              <h5>Добро пожаловать</h5>
+              <p>Отвергает именно кто возжаждал восхваляющих потому из презирает: примером если тех бы картину нас некоей, что  немалое что. Это стремящегося предаваться из-за наслаждений наслаждение умеет стремящегося ни само никого когда стал простейшим избегал отвергает говорил вами что такие нет раскрою жизни то никаких.</p>
+              <ul>
+                <li>Отвергает именно кто </li>
+                <li>Возжаждал восхваляющих потому из презирает</li>
+                <li>Примером если тех бы картину </li>
+                <li>Наслаждений наслаждение умеет стремящегося ни само </li>
+              </ul>
+          </div>
+       </div>
+<!-- /about-service -->
+
+<script src="<%= $general_url %>/js/functions.js"></script>
+%= javascript begin
+    function content_filter(sender, content) {
+        if (sender != 'region')
+            return content;
+        var new_content = [];
+        var indexes = {};
+        $.each(content, function (index, item) {
+            if (!indexes[item.name])
+                indexes[item.name] = new_content.push({ name: item.name, id: item.id }) - 1;
+            else
+                new_content[indexes[item.name]].id += ',' + item.id;
+        });
+        return new_content;
+    }
+
+    var elements = ['regions', 'companies'];
+    select_change_controller(elements, '<%= $general_url %>', content_filter);
+% end
+
