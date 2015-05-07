@@ -6,7 +6,7 @@
     <!-- sub-menu -->
     <ul class="sub-menu-main">
         <li><a href="<%= $general_url %>">Запрос по адресу</a></li>
-        <li class="active"><a href="<%= $general_url %>/report_v2">Запрос по организации</a></li>
+        <li class="active"><a href="#" onclick="return false;">Запрос по организации</a></li>
     </ul>
     <!-- /sub-menu -->
     <form>
