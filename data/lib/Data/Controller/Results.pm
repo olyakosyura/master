@@ -1033,6 +1033,9 @@ sub build {
         },
         investment => {
         },
+        bux_report => {
+
+        },
     );
 
     if ($calc_type && !$calc_types{$calc_type}) {

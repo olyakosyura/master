@@ -112,7 +112,7 @@ sub objects {
 sub calc_types {
     my $self = shift;
 
-    my $r = select_all $self, "select id, name from calc_types";
+    my $r = select_all $self, "select id, name from calc_types order by order_index";
     return $self->render(json => { ok => 1, count => scalar @$r, types => $r });
 
 }

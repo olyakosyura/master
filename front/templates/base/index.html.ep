@@ -71,10 +71,10 @@
       </div>
       <!-- / -->
       <!--  -->
-      <label for="type-of-expenditure">Вид расходов</label>
+      <label for="type-of-expenditure">Отчет</label>
       <div>
         <select name="type-of-expenditure" id="calc_types">
-          <option value="undef">(без расчета)</option>
+          <option value="undef">Рабочий отчет</option>
 % for my $c (@{$calc_types->{types}}) {
           <option value="<%= $c->{id} %>"><%= $c->{name} %></option>
 % }
