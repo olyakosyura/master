@@ -615,6 +615,7 @@ sub render_xlsx {
     my %splitter_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
     my %marked_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{marked_building}}) } keys %styles;
     my $general_style = $workbook->add_format(%general_style);
+    my $numbers_style = $workbook->add_format(%general_style, valign => 'center', align => 'center');
     my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center');
 
     my @fields = (
@@ -924,13 +925,13 @@ sub render_xlsx {
     }
 
     my $worksheet = $workbook->add_worksheet();
-    $worksheet->freeze_panes(1,4);
+    $worksheet->freeze_panes(3, 4);
     $worksheet->merge_range(0, 0, 0, $i - 1, $title, $title_style);
 
     my $last_building_id = -100500;
     my $xls_row = 1;
 
-    for (my $i = -1; $i < @$content;) {
+    for (my $i = -2; $i < @$content;) {
         my $row = $content->[$i] if $i >= 0;
 
         my $building_changed = 0;
@@ -942,10 +943,15 @@ sub render_xlsx {
         my $row_printed = 0;
         for my $col (0 .. @fields - 1) {
             my $rule = $fields[$col];
-            if ($i == -1) {
+            if ($i == -2) {
                 unless ($rule->{merge_with}) {
                     $worksheet->set_column($col, $col, $rule->{col_width});
                     $worksheet->write($xls_row, $rule->{index}, $rule->{header_text}, $styles_cache{header});
+                    $row_printed = 1;
+                }
+            } elsif ($i == -1) {
+                unless ($rule->{merge_with}) {
+                    $worksheet->write($xls_row, $rule->{index}, $rule->{index} + 1, $numbers_style);
                     $row_printed = 1;
                 }
             } elsif ($building_changed) {
@@ -953,13 +959,15 @@ sub render_xlsx {
                 $worksheet->write($xls_row, $rule->{index}, $val, $splitter_styles_cache{$rule->{style}});
                 $row_printed = 1;
             } elsif ($row->{need_mark}) {
-                my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
-                $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
-                $row_printed = 1;
+                unless ($rule->{only_in_header}) {
+                    my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
+                    $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
+                    $row_printed = 1;
+                }
             } elsif ((not $rule->{only_in_header}) && not $rule->{dont_print_in_common}) {
                 $worksheet->write($xls_row, $rule->{index}, $row->{$rule->{mysql_name}}, $styles_cache{$rule->{style}});
                 $row_printed = 1;
-            } else {
+            } elsif (not $rule->{only_in_header}) {
                 $worksheet->write($xls_row, $rule->{index}, undef, $general_style);
             }
         }
@@ -1085,7 +1093,6 @@ sub build {
             charac.name as characteristic,
             o.size as size,
             o.characteristic_value as count,
-            o.size as size,
             i.name as isolation_type,
             l.name as laying_method,
             o.install_year as install_year,
@@ -1114,7 +1121,7 @@ SQL
     my ($calc_stat, $calc_join, $title) = ('', '', general_title);
     if ($calc_type) {
         my $t = $calc_types{$calc_type};
-        if ($t) {
+        if ($t && $t->{select} && $t->{join}) {
             $calc_stat = ',' . $t->{select};
             $calc_join = $t->{join};
             $title = $t->{title};
