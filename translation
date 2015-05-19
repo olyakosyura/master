@@ -38,3 +38,13 @@ diagnostic_nds = НДС 18%
 diagnostic_tatal_nds = Итого (в том числе НДС)
 
 expluatation_heat_load = Тепловая нагрузка
+
+general_title = General title (FIXME)
+amortization_title = FIXME
+diagnostic_title = FIXME
+expluatation_title = FIXME
+service_title = FIXME
+cur_repair_title = FIXME
+glob_repair_title = FIXME
+investment_title = FIXME
+bux_report_title = Ведомость объектов инженерной инфраструктуры системы теплоснабжения для постановки на бухгалтерский учет

@@ -552,12 +552,17 @@ sub rebuild_cache {
 }
 
 sub render_xlsx {
-    my ($self, $content, $workbook, $calc_type) = @_;
+    my ($self, $content, $workbook, $calc_type, $title) = @_;
 
-    my $header_bg_color = $workbook->set_custom_color(9, 201, 194, 194);
-    my $splitter_bg_color = $workbook->set_custom_color(10, 230, 223, 223);
+    my $header_bg_color = 'white';#$workbook->set_custom_color(9, 116, 141, 67);
+    my $splitter_bg_color = $workbook->set_custom_color(10, 116, 141, 67);
+    my $marked_bg_color = $workbook->set_custom_color(11, 215, 227, 189);
 
     # look at http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm to edit styles below
+    my %general_style = (
+        border => 1,
+        border_color => 'black',
+    );
     my %styles = (
         header => {
             text_wrap => 1,
@@ -600,10 +605,17 @@ sub render_xlsx {
             bold => 1,
             bg_color => $splitter_bg_color,
         },
+        marked_building => {
+            bold => 1,
+            bg_color => $marked_bg_color,
+        },
     );
 
-    my %styles_cache = map { $_ => $workbook->add_format(%{$styles{$_}}) } keys %styles;
-    my %splitter_styles_cache = map { $_ => $workbook->add_format(%{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
+    my %styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}) } keys %styles;
+    my %splitter_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
+    my %marked_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{marked_building}}) } keys %styles;
+    my $general_style = $workbook->add_format(%general_style);
+    my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center');
 
     my @fields = (
         {
@@ -612,24 +624,28 @@ sub render_xlsx {
             style => 'integer',
             col_width => 10,
             print_in_header => 1,
+            dont_print_in_common => 1,
         }, {
             mysql_name => 'company_name',
             header_text => company_name,
             style => 'text',
             col_width => 50,
             print_in_header => 1,
+            dont_print_in_common => 1,
         }, {
             mysql_name => 'address',
             header_text => address,
             style => 'text',
             col_width => 40,
             print_in_header => 1,
+            dont_print_in_common => 1,
         }, {
             mysql_name => 'district',
             header_text => district,
             style => 'text',
             col_width => 10,
             print_in_header => 1,
+            dont_print_in_common => 1,
         }, {
             mysql_name => 'object_name',
             header_text => object_name,
@@ -909,9 +925,10 @@ sub render_xlsx {
 
     my $worksheet = $workbook->add_worksheet();
     $worksheet->freeze_panes(1,4);
+    $worksheet->merge_range(0, 0, 0, $i - 1, $title, $title_style);
 
     my $last_building_id = -100500;
-    my $xls_row = 0;
+    my $xls_row = 1;
 
     for (my $i = -1; $i < @$content;) {
         my $row = $content->[$i] if $i >= 0;
@@ -935,9 +952,15 @@ sub render_xlsx {
                 my $val = $row->{$rule->{mysql_name}} if $rule->{print_in_header};
                 $worksheet->write($xls_row, $rule->{index}, $val, $splitter_styles_cache{$rule->{style}});
                 $row_printed = 1;
-            } elsif (not $rule->{only_in_header}) {
+            } elsif ($row->{need_mark}) {
+                my $val = $rule->{only_in_header} ? undef : $row->{$rule->{mysql_name}};
+                $worksheet->write($xls_row, $rule->{index}, $val, $marked_styles_cache{$rule->{style}});
+                $row_printed = 1;
+            } elsif ((not $rule->{only_in_header}) && not $rule->{dont_print_in_common}) {
                 $worksheet->write($xls_row, $rule->{index}, $row->{$rule->{mysql_name}}, $styles_cache{$rule->{style}});
                 $row_printed = 1;
+            } else {
+                $worksheet->write($xls_row, $rule->{index}, undef, $general_style);
             }
         }
 
@@ -996,7 +1019,8 @@ sub build {
             select => 'calcs.norma as am_norma, calcs.calculated_amortization as am_calc_amort, ' .
                       'calcs.usage_norma as am_u_norma, calcs.usage_limit as am_usage_limit, ' .
                       'calcs.year_amortization as am_year_amort, calcs.amortization as am_amort',
-            join => 'join amortization_calculations calcs on calcs.object_id = o.id',
+            join   => 'join amortization_calculations calcs on calcs.object_id = o.id',
+            title  => amortization_title,
         },
         diagnostic => {
             select => 'calcs.ztr * o.characteristic_value as dia_ztr, ' .
@@ -1009,8 +1033,9 @@ sub build {
                       'calcs.total * o.characteristic_value as dia_total, ' .
                       'calcs.nds * o.characteristic_value as dia_nds,' .
                       '(calcs.nds + calcs.total) * o.characteristic_value as dia_total_nds',
-            join =>   'left outer join diagnostic_calculations as calcs_r on calcs_r.object_id = o.id ' .
+            join   => 'left outer join diagnostic_calculations as calcs_r on calcs_r.object_id = o.id ' .
                       'left outer join diagnostic_indexes as calcs on calcs.id = calcs_r.index_id',
+            title  => diagnostic_title,
         },
         expluatation => {
             select => 'calcs.ztr as exp_ztr, ' .
@@ -1022,19 +1047,24 @@ sub build {
                       'calcs.total as exp_total, ' .
                       'calcs.nds as exp_nds,' .
                       '(calcs.nds + calcs.total) as exp_total_nds',
-            join =>   'join expluatation_calculations calcs_r on calcs_r.building_id = b.id ' .
+            join   => 'join expluatation_calculations calcs_r on calcs_r.building_id = b.id ' .
                       'left outer join expluatation_indexes as calcs on calcs.id = calcs_r.index_id',
+            title  => expluatation_title,
         },
         service => {
+            title  => service_title,
         },
         cur_repair => {
+            title  => cur_repair_title,
         },
         glob_repair => {
+            title  => glob_repair_title,
         },
         investment => {
+            title  => investment_title,
         },
         bux_report => {
-
+            title  => bux_report_title,
         },
     );
 
@@ -1050,6 +1080,7 @@ sub build {
             c.name as company_name,
             b.name as address,
             cat.object_name as object_name,
+            cat_n.category_type = 'marked' as need_mark,
             cat_n.name as category_name,
             charac.name as characteristic,
             o.size as size,
@@ -1080,12 +1111,13 @@ sub build {
         %s %s
         order by b.id, o.id
 SQL
-    my ($calc_stat, $calc_join) = ('', '');
+    my ($calc_stat, $calc_join, $title) = ('', '', general_title);
     if ($calc_type) {
         my $t = $calc_types{$calc_type};
         if ($t) {
             $calc_stat = ',' . $t->{select};
             $calc_join = $t->{join};
+            $title = $t->{title};
         }
     }
 
@@ -1098,7 +1130,7 @@ SQL
         # http://search.cpan.org/~jmcnamara/Excel-Writer-XLSX-0.15/lib/Excel/Writer/XLSX.pm#add_format(_%properties_)
     );
 
-    $self->render_xlsx($r, $workbook, $calc_type);
+    $self->render_xlsx($r, $workbook, $calc_type, $title);
     $workbook->close;
 
     $f->unlink_on_destroy(0);
