@@ -566,6 +566,7 @@ sub render_xlsx {
     my %styles = (
         header => {
             text_wrap => 1,
+            bold => 1,
             align => 'center',
             valign => 'vcenter',
             color => 'black',
@@ -615,7 +616,7 @@ sub render_xlsx {
     my %splitter_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{building_splitter}}) } keys %styles;
     my %marked_styles_cache = map { $_ => $workbook->add_format(%general_style, %{$styles{$_}}, %{$styles{marked_building}}) } keys %styles;
     my $general_style = $workbook->add_format(%general_style);
-    my $numbers_style = $workbook->add_format(%general_style, valign => 'center', align => 'center');
+    my $numbers_style = $workbook->add_format(%general_style, valign => 'center', align => 'center', bold => 1);
     my $title_style = $workbook->add_format(bold => 1, valign => 'center', align => 'center');
 
     my @fields = (
@@ -831,6 +832,30 @@ sub render_xlsx {
             col_width => 10,
             calc_type => 'diagnostic',
         }, {
+            header_text => bux_econ_life,
+            mysql_name => 'bux_life_limit',
+            style => 'integer',
+            col_width => 10,
+            calc_type => 'bux_report',
+        }, {
+            header_text => bux_econ_life_limit,
+            mysql_name => 'bux_usage_limit',
+            style => 'integer',
+            col_width => 10,
+            calc_type => 'bux_report',
+        }, {
+            header_text => bux_expluatation_life,
+            mysql_name => 'bux_econ_limit',
+            style => 'integer',
+            col_width => 10,
+            calc_type => 'bux_report',
+        }, {
+            header_text => bux_expluatation_life_limit,
+            mysql_name => 'bux_expl_limit',
+            style => 'integer',
+            col_width => 10,
+            calc_type => 'bux_report',
+        }, {
             header_text => diagnostic_tatal_nds,
             mysql_name => 'dia_total_nds',
             style => 'money',
@@ -916,6 +941,11 @@ sub render_xlsx {
 
     my %merges = map { my $v = $_->{merge_with}; $v => (grep { $_->{mysql_name} eq $v } @fields) } grep { $_->{merge_with} } @fields;
     my $i = 0;
+
+    if ($calc_type eq 'bux_report') {
+        @fields = grep { $_->{mysql_name} !~ /^(install_year|reconstruction_year|wear|usage_limit)$/ } @fields;
+    }
+
     for (@fields) {
         $_->{index} = $_->{merge_with} ? $merges{$_->{merge_with}}->{index} : $i++;
     }
@@ -1072,6 +1102,11 @@ sub build {
             title  => investment_title,
         },
         bux_report => {
+            select => 'calcs.value as bux_econ_limit, ' .
+                      'o.last_usage_limit as bux_usage_limit, ' .
+                      'calcs.bux_value as bux_life_limit, '.
+                      'ROUND((o.last_usage_limit / calcs.bux_value) * calcs.value) as bux_expl_limit',
+            join   => 'left outer join amortization_indexes calcs on calcs.category_id = cat_n.id',
             title  => bux_report_title,
         },
     );

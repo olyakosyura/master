@@ -5,8 +5,8 @@ district = Округ местоположения
 object_name = Наименование объекта
 category = Категория
 characteristic = Характеристика
-count = Количество, м/шт./ГКал/час
-size = Диаметр  тепловых сетей, мм
+count = Количество, м/шт
+size = Диаметр, мм
 isolation_type = Тип изоляции
 laying_method = Способ прокладки тепловых сетей
 install_year = Год ввода в эксплуатацию тепловых сетей
@@ -21,7 +21,7 @@ xlsx_default_title = Сгенерированный отчет
 
 amortization_norma = Норма амортизационных отчислений по данным оценочной компании
 amortization_value = Амортизация по данным оценочной компании (руб. в год)
-amortization_usage = Нормативный срок использования, лет
+amortization_usage = Принятый срок эксплуатации, лет
 amortization_usage_limit = Оставшийся срок полезного использования, лет
 amortization_total = Годовая норма амортизации (%)
 amortization_per_year = Амортизация, руб. в год
@@ -39,7 +39,12 @@ diagnostic_tatal_nds = Итого (в том числе НДС)
 
 expluatation_heat_load = Тепловая нагрузка
 
-general_title = General title (FIXME)
+bux_econ_life = Срок экономической жизни объекта
+bux_econ_life_limit = Оставшийся срок экономической жизни объекта
+bux_expluatation_life = Принятый срок эксплуатации
+bux_expluatation_life_limit = Расчетный оставшийся срок эксплуатации
+
+general_title = Рабочий отчет
 amortization_title = FIXME
 diagnostic_title = FIXME
 expluatation_title = FIXME
