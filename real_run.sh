@@ -33,6 +33,6 @@ Content-Type: text/html
 </html>
 END
     echo "Sending error report (retcode = $ERRCODE)"
-    cat /tmp/report$1 | swaks --to maximovich.andrey@gmail.com,pberejnoy2005@gmail.com --from no-reply@web-vesna.ru --data -
+    cat /tmp/report$1 | swaks --to a.maximovich@web-vesna.ru,p.berezhnoy@web-vesna.ru,admin@web-vesna.ru --from no-reply@web-vesna.ru --data - >/dev/null 2>&1
     sleep 5
 done
