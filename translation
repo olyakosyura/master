@@ -41,8 +41,8 @@ expluatation_heat_load = Тепловая нагрузка
 
 bux_econ_life = Срок экономической жизни объекта
 bux_econ_life_limit = Оставшийся срок экономической жизни объекта
-bux_expluatation_life = Принятый срок эксплуатации
-bux_expluatation_life_limit = Расчетный оставшийся срок эксплуатации
+bux_expluatation_life = Нормативный срок полезного использования
+bux_expluatation_life_limit = Расчетный оставшийся срок полезного использования
 
 general_title = Рабочий отчет
 amortization_title = FIXME
