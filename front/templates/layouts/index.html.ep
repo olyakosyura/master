@@ -63,6 +63,10 @@
             <h2><a href="#"><span></span></a>Редактировать данные</h2>
             <nav>
               <ul>
+                <li><a href="<%= $general_url %>" <%= stash('url') eq '/' ? "class=active" : '' %>>
+                  <em id="em_0"></em>
+                  <span>Форма запроса</span>
+                </a></li>
                 <li><a href="#">
                   <em id="em_1"></em>
                   <span>Справочники</span>
