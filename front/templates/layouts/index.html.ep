@@ -64,25 +64,29 @@
             <nav>
               <ul>
                 <li><a href="<%= $general_url %>" <%= stash('url') eq '/' ? "class=active" : '' %>>
-                  <em id="em_0"></em>
+                  <em id="em_main"></em>
                   <span>Форма запроса</span>
                 </a></li>
+                <li><a href="<%= $general_url %>/maps" <%= stash('url') eq '/maps' ? "class=active" : '' %>>
+                  <em id="em_maps"></em>
+                  <span>На карте</span>
+                </a></li>
                 <li><a href="#">
-                  <em id="em_1"></em>
+                  <em id="em_catalogue"></em>
                   <span>Справочники</span>
                 </a></li>
                 <li><a href="#">
-                  <em id="em_2"></em>
+                  <em id="em_estimate"></em>
                   <span>Таблицы смет</span>
                 </a></li>
 % if ($role eq 'admin') {
                 <li><a href="<%= $general_url %>/users" <%= stash('url') eq '/users' ? "class=active" : '' %> >
-                    <em id="em_3"></em>
+                    <em id="em_users"></em>
                     <span>Таблица<br  />пользователей</span>
                 </a></li>
 % }
                 <li><a href="<%= $general_url %>/objects" <%= stash('url') eq '/objects' ? "class=active" : '' %> >
-                    <em id="em_4"></em>
+                    <em id="em_nodes"></em>
                     <span>Данные<br  />Инженерных узлов</span>
                 </a></li>
               </ul>

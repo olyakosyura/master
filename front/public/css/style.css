@@ -391,10 +391,10 @@ header .data-box b{
 .edit-data nav ul{text-align: center;}
 .edit-data nav li{
 	display: inline-block;	
-	width: 15%;
-	margin:0 2%;
+	width: 14%;
+	margin:0 1%;
 	position: relative;
-	padding-top: 5em;
+	padding-top: 4em;
 }
 .edit-data nav li a{
 	position: relative;
@@ -423,23 +423,26 @@ header .data-box b{
 	color: #FFF;
 }
 
-.edit-data nav li a em#em_0{width: 53px;}
-.edit-data nav li a:hover em#em_0{background-position:0px -99px;}
-.edit-data nav li a em#em_1{width: 67px;background-position:-233px 0px;}
-.edit-data nav li a:hover em#em_1{background-position:-233px -100px;}
-.edit-data nav li a em#em_2{background-position:-484px 0;}
-.edit-data nav li a:hover em#em_2{background-position:-484px -100px;}
-.edit-data nav li a em#em_3{background-position:-726px 0;}
-.edit-data nav li a:hover em#em_3{background-position:-726px -100px;}
-.edit-data nav li a em#em_4{background-position:-965px 0;}
-.edit-data nav li a:hover em#em_4{background-position:-965px -100px;}
+.edit-data nav li a em#em_main{width: 53px;}
+.edit-data nav li a:hover em#em_main{background-position:0px -99px;}
+.edit-data nav li a em#em_catalogue{width: 67px;background-position:-233px 0px;}
+.edit-data nav li a:hover em#em_catalogue{background-position:-233px -100px;}
+.edit-data nav li a em#em_estimate{background-position:-484px 0;}
+.edit-data nav li a:hover em#em_estimate{background-position:-484px -100px;}
+.edit-data nav li a em#em_users{background-position:-726px 0;}
+.edit-data nav li a:hover em#em_users{background-position:-726px -100px;}
+.edit-data nav li a em#em_nodes{background-position:-965px 0;}
+.edit-data nav li a:hover em#em_nodes{background-position:-965px -100px;}
+.edit-data nav li a em#em_maps{background-position:-965px 0;}
+.edit-data nav li a:hover em#em_maps{background-position:-965px -100px;}
 
 
-.edit-data nav li a.active em#em_0{background-position:0px -99px;}
-.edit-data nav li a.active em#em_1{background-position:-233px -100px;}
-.edit-data nav li a.active em#em_2{background-position:-484px -100px;}
-.edit-data nav li a.active em#em_3{background-position:-726px -100px;}
-.edit-data nav li a.active em#em_4{background-position:-965px -100px;}
+.edit-data nav li a.active em#em_main{background-position:0px -99px;}
+.edit-data nav li a.active em#em_catalogue{background-position:-233px -100px;}
+.edit-data nav li a.active em#em_estimate{background-position:-484px -100px;}
+.edit-data nav li a.active em#em_users{background-position:-726px -100px;}
+.edit-data nav li a.active em#em_nodes{background-position:-965px -100px;}
+.edit-data nav li a.active em#em_maps{background-position:-965px -100px;}
 /* /nav */
 
 @media screen and (max-width:997px) {
