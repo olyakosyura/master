@@ -1,0 +1,50 @@
+% layout 'index';
+
+%= javascript begin
+ymaps.ready(init);
+var myMap,
+    myPlacemark;
+
+function init(){
+    myMap = new ymaps.Map("map", {
+        center: [55.76, 37.64],
+        zoom: 7
+    });
+
+    myPlacemark = new ymaps.Placemark([55.76, 37.64], {
+    hintContent: 'Москва!',
+    balloonContent: 'Столица России'
+});
+
+myMap.geoObjects.add(myPlacemark);
+}
+% end
+
+<!-- report-request-form -->
+<div class="report-request-form">
+    <h3>Организации на карте</h3>
+    <div id="map" class="report-map"></div>
+    <form>
+      <!--  -->
+      <label for="region">Регион</label>
+      <div>
+% my $i = 0; my $current = "Москва";
+% my %regions = map { $_->{region} => $_->{region} } @{$districts->{districts}};
+        <select name="region" id="regions">
+          <option>Выберете регион</option>
+% for (sort keys %regions) {
+          <option value="<%= $regions{$_} %>" <%= $_ eq $current ? "selected" : "" %>><%= $_ %></option>
+% }
+        </select>
+      </div>
+      <!-- / -->
+      <!--  -->
+      <label for="organization">Организация</label>
+      <div>
+        <select name="organization" id="companies">
+          <option value="-1">Выберете организацию</option>
+        </select>
+      </div>
+      <!-- / -->
+    </form>
+</div>

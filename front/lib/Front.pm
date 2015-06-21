@@ -11,6 +11,7 @@ my %access_rules = (
     '/upload'    => 'admin',
     '/objects'   => 'manager',
     '/users'     => 'admin',
+    '/maps'      => 'user',
 );
 
 # This method will run once at server start
@@ -69,6 +70,7 @@ sub startup {
     $auth->get('/users')->to("builder#users");
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
     $auth->get('/report_v2')->to("builder#report_v2");
+    $auth->get('/maps')->to("builder#maps");
 
     $auth->any('/*any' => { any => '' } => sub {
         my $self = shift;

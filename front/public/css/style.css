@@ -498,6 +498,13 @@ header .data-box b{
 .report-request-form .row-button{
 	margin-top: 1.46em;
 }
+.report-request-form .report-map{
+	width: 600px;
+	height: 400px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
 
 /*================== /report-request-form ==================*/
 

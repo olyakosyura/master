@@ -70,4 +70,17 @@ sub users {
     return $self->render(template => 'base/users');
 }
 
+sub maps {
+    my $self = shift;
+
+    my $r = send_request($self,
+        url => 'districts',
+        port => DATA_PORT,
+    );
+    return $self->render(template => 'base/internal_err') unless $r;
+
+    $self->stash(districts => $r);
+    return $self->render(template => 'base/maps');
+}
+
 1;
