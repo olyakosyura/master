@@ -78,8 +78,18 @@ sub maps {
         port => DATA_PORT,
     );
     return $self->render(template => 'base/internal_err') unless $r;
-
     $self->stash(districts => $r);
+
+    $r = send_request($self,
+        url => 'companies',
+        port => DATA_PORT,
+        args => {
+            region => 'Москва',
+        }
+    );
+    return $self->render(template => 'base/internal_err') unless $r && $r->{companies};
+    $self->stash(companies => $r->{companies});
+
     return $self->render(template => 'base/maps');
 }
 
