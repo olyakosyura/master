@@ -6,6 +6,9 @@ DATA_PORT=7001
 SESSION_PORT=7002
 LOGIC_PORT=7003
 
+export MOJO_REACTOR=Mojo::Reactor::Poll
+
+
 . config
 
 pidsf='.pids'

@@ -87,7 +87,7 @@ sub do_work {
 
     my $tid = threads->tid();
 
-    while (my $item = $data->{queue}->dequeue_timed(5)) {
+    while (my $item = $data->{queue}->dequeue) {
         if ($item->{coordinates}) {
             $data->{data}->enqueue({
                 old => 1,
