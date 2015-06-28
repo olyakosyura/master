@@ -14,6 +14,8 @@ our @EXPORT_OK = qw(
     select_row
     select_all
     execute_query
+    prepare_query
+    execute_prepared
     last_err
     last_id
 );
@@ -23,6 +25,7 @@ our %EXPORT_TAGS = (
 );
 
 my $dbh;
+my %prepared;
 
 BEGIN {
     $dbh = DBI->connect(
@@ -62,6 +65,21 @@ sub execute_query {
     my ($ctl, $query, @args) = @_;
     $ctl->app->log->debug(sprintf "SQL query: '%s'. [args: %s]", $query, join(',', map { defined $_ ? $_ : "undef" } @args));
     return $dbh->do($query, undef, @args) or ($ctl->app->log->warn($dbh->errstr) and undef);
+}
+
+sub prepare_query {
+    my ($ctl, $query) = @_;
+    $ctl->app->log->debug("Preparing SQL query: '$query'");
+    my $sth = $dbh->prepare($query);
+    $prepared{$sth} = $query;
+    return $sth;
+}
+
+sub execute_prepared {
+    my ($ctl, $sth, @args) = @_;
+    $ctl->app->log->debug(sprintf "Executing prepared query: '%s' [args: %s]",
+        ($prepared{$sth} || ''), join(',', map { defined $_ ? $_ : "undef" } @args));
+    return $sth->execute(@args);
 }
 
 sub last_id {

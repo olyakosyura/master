@@ -1,0 +1,124 @@
+% layout 'index';
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Addr</th>
+        <th>Found</th>
+    <tr>
+
+% for my $c (@$db_data) {
+    <tr id="row_<%= $c->{id} %>">
+        <td><%= $c->{id} %></td>
+        <td><%= $c->{name} %></td>
+        <td><%= $c->{coordinates} ? $c->{coordinates} : "Pending..." %></td>
+    </tr>
+% }
+</table>
+<p class="row-button">
+    <a href="#" onclick="save_content(''); return false;">Сохранить результаты</a>
+</p>
+
+%= javascript begin
+    var to_save = [];
+    $(function() {
+        var __status_timer = -1;
+        function __drop_timer() {
+            clearInterval(__status_timer);
+        }
+
+        var callback = (function (timer) {
+                var pending = 0,
+                    last_id = 0;
+                return function () {
+                    if (pending)
+                        return;
+                    pending = 1;
+                    $.get('<%= $general_url %>/geolocation/status?req_id=<%= $req_id %>&last_id=' + last_id, function (data) {
+                        if (!data) {
+                            alert("Pending failed");
+                            __drop_timer();
+                        } else if (data.error) {
+                            alert("Request filed: " + data.error);
+                            __drop_timer();
+                        } else if (data.count > 0) {
+                            last_id = data.last_id;
+                            for (var i = 0; i < data.count; i++) {
+                                var content = data.content[i],
+                                    $row = $("#row_" + content.id);
+                                if (!$row) {
+                                    console.log("Invalid row found in response: " + content.id);
+                                    continue;
+                                }
+
+                                var $cell = $($row.children()[2]);
+                                if (!content.success || !content.count) {
+                                    $cell.text("Failed");
+                                } else {
+                                    if (content.count == 1) {
+                                        var key;
+                                        for (key in content.data) {}
+                                        $cell.text(content.data[key].addr + " (" + content.data[key].coords + ")");
+                                        if (!content.old) {
+                                            to_save.push({
+                                                single: true,
+                                                id: content.id,
+                                                val: key,
+                                            });
+                                        }
+                                    } else {
+                                        var html = '<form action="" name="form_' + content.id + '">';
+                                        var br = "", keys = [];
+                                        for (var key in content.data) {
+                                            var item = content.data[key];
+                                            html += br + '<input type="radio" id="inp_' + key + '" name="addr" value="' + key + '" />' +
+                                                '<label for="inp_' + key + '">' + item.addr + " (" + item.coords + ")</label>";
+                                            br = "<br>";
+                                        }
+                                        to_save.push({
+                                            single: false,
+                                            id: content.id,
+                                        });
+                                        $cell.html(html + "</form>");
+                                    }
+                                }
+                            }
+                        }
+
+                        if (data.complete) {
+                            alert("Geolocation request complete");
+                            __drop_timer();
+                        }
+                        pending = 0;
+                });
+            }})(),
+            __status_timer = setInterval(callback, 5000);
+    });
+
+    function save_content() {
+        var to_send = [];
+        for (var i = 0; i < to_save.length; ++i) {
+            if (to_save[i].single) {
+                to_send.push({
+                    id: to_save[i].id,
+                    val: to_save[i].val,
+                });
+            } else {
+                var val = document['form_' + to_save[i].id].addr.value;
+                if (val != '')
+                    to_send.push({
+                        id: to_save[i].id,
+                        val: val,
+                    });
+            }
+        }
+
+        $.post('<%= $general_url %>/geolocation/save', JSON.stringify({ req_id: '<%= $req_id %>', to_save: to_send }), function (data) {
+            if (data) {
+                alert(data.saved + " addresses saved");
+            } else {
+                alert("Cant save data: internal error");
+            }
+        });
+    }
+% end

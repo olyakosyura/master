@@ -27,3 +27,7 @@ sub _i_err {
     return $self->render(json => { status => 500, error => 'internal' });
 }
 
+sub render_500 {
+    return $self->_i_err;
+}
+
