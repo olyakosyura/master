@@ -104,7 +104,11 @@
                     val: to_save[i].val,
                 });
             } else {
-                var val = document['form_' + to_save[i].id].addr.value;
+                var addr = document['form_' + to_save[i].id].addr;
+                if (!addr)
+                    continue;
+
+                var val = addr.value;
                 if (val != '')
                     to_send.push({
                         id: to_save[i].id,

@@ -87,7 +87,7 @@ sub do_work {
 
     my $tid = threads->tid();
 
-    while (my $item = $data->{queue}->dequeue) {
+    while (my $item = $data->{queue}->dequeue_nb) {
         if ($item->{coordinates}) {
             $data->{data}->enqueue({
                 old => 1,
@@ -104,7 +104,7 @@ sub do_work {
             next;
         }
 
-        $self->app->log->debug("[$tid] Trying to request coordinates for building $item->{id} (addr $item->{name})\n");
+        $self->app->log->debug("[$tid] Trying to request coordinates for building $item->{id} (addr $item->{name})");
         my $response = $ua->get(url() . $item->{name});
         if ($response->is_success) {
             $data->{data}->enqueue($self->parse_content($item->{id}, $response->decoded_content));
