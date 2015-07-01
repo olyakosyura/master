@@ -8,7 +8,7 @@ use LWP::UserAgent;
 use threads;
 use threads::shared;
 use Thread::Queue;
-use URL::Encode qw( url_encode_utf8 );
+use URL::Encode::XS qw( url_encode_utf8 );
 
 my %requests :shared;
 sub threads_count { 4 }
@@ -114,7 +114,7 @@ sub do_work {
         }
 
         $self->app->log->debug("[$tid] Trying to request coordinates for building $item->{id} (addr $item->{name})");
-        my $response = $ua->get(url() . $item->{name});
+        my $response = $ua->get(url $item->{name});
         if ($response->is_success) {
             $data->{data}->enqueue($self->parse_content($item->{id}, $response->decoded_content));
         } else {
