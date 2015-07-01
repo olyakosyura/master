@@ -1,4 +1,4 @@
-package Front::Controller::Geolocation;
+package Data::Controller::Geolocation;
 use Mojo::Base 'Mojolicious::Controller';
 
 use DB qw( :all );
@@ -8,18 +8,26 @@ use LWP::UserAgent;
 use threads;
 use threads::shared;
 use Thread::Queue;
-use Data::Dumper;
-
-sub url { 'http://geocode-maps.yandex.ru/1.x/?format=json&geocode=' }
-sub threads_count { 4 }
+use URL::Encode qw( url_encode_utf8 );
 
 my %requests :shared;
+sub threads_count { 4 }
 
-sub begin {
+sub url {
+    my $addr = shift;
+    $addr = url_encode_utf8 $addr;
+    return "http://geocode-maps.yandex.ru/1.x/?format=json&geocode=$addr";
+}
+
+sub _get_buildings {
+    return select_all(shift, "select id, name, coordinates from buildings where status = 'Голова'");
+}
+
+sub start_geolocation {
     my $self = shift;
 
-    my $data = select_all($self, "select id, name, coordinates from buildings where status = 'Голова'");
-    return $self->render(status => 500) unless $data;
+    my $data = $self->_get_buildings;
+    return $self->render(json => { status => 500 }) unless $data;
 
     for (keys %requests) {
         delete $requests{$_} if $requests{$_}{time} <= time - 4 * 60 * 60; # exp time for cache is 4 hours
@@ -33,17 +41,18 @@ sub begin {
         queue       => Thread::Queue->new(@$data),
     });
 
-    my @threads;
     for (1 .. threads_count) {
-        push @threads, threads->create(sub {
+        threads->create(sub {
             $self->do_work($req_id);
         });
     }
 
-    $self->stash(db_data => $data);
-    $self->stash(req_id => $req_id);
+    return $self->render(json => { req_id => $req_id, objects => $data, status => 200 });
+}
 
-    return $self->render(template => 'base/coordinates');
+sub objects {
+    my $self = shift;
+    return $self->render(json => $self->_get_buildings);
 }
 
 sub parse_content {
@@ -126,10 +135,10 @@ sub status {
     my $last_id = $self->param('last_id');
 
     my $data = $requests{$req_id};
-    return $self->render(json => { error => "bad request: req_id is unknown" }) unless $data;
+    return $self->render(json => { status => 400, error => "bad request: req_id is unknown" }) unless $data;
 
     my @to_return;
-    my $new_last_id = $last_id;
+    my $new_last_id = $last_id > 0 ? $last_id : 0;
     while (my $item = $data->{data}->peek($new_last_id)) {
         ++$new_last_id;
         push @to_return, $item;
@@ -140,18 +149,21 @@ sub status {
         content => \@to_return,
         last_id => $new_last_id,
         complete => ($data->{complete} == threads_count() ? 1 : 0),
+        status => 200,
     });
 }
 
 sub save_changes {
     my $self = shift;
-    my $args = $self->req->json;
+    my $args = eval {
+        decode_json $self->req->text
+    } or return $self->render(json => { status => 400, error => 'invalid content' });
 
     my $data = $requests{$args->{req_id}};
-    return $self->render(json => { error => "bad request: req_id is unknown" }) unless $data;
+    return $self->render(json => { status => 400, error => "bad request: req_id is unknown" }) unless $data;
 
     my $data_to_save = $args->{to_save};
-    return $self->render(json => { error => 'invalid data' } ) unless $data_to_save and ref($data_to_save) eq "ARRAY" and @$data_to_save;
+    return $self->render(json => { status => 500, error => 'invalid data' } ) unless $data_to_save and ref($data_to_save) eq "ARRAY" and @$data_to_save;
 
     my %saved_content;
     while (my $item = $data->{data}->dequeue_nb) {
@@ -170,7 +182,7 @@ sub save_changes {
         }
     }
 
-    return $self->render(json => { saved => $count });
+    return $self->render(json => { status => 200, saved => $count });
 }
 
 1;

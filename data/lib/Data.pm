@@ -32,6 +32,11 @@ sub startup {
     $r->post('/add_categories')->to('results#add_categories');
     $r->post('/add_content')->to('results#add_content');
     $r->post('/add_buildings_meta')->to('results#add_buildings_meta');
+
+    $r->get('/geolocation/objects')->to('geolocation#objects');
+    $r->get('/geolocation/status')->to('geolocation#status');
+    $r->get('/geolocation/start')->to('geolocation#start_geolocation');
+    $r->post('/geolocation/save')->to('geolocation#save_changes');
 }
 
 1;

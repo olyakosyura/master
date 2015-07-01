@@ -75,9 +75,9 @@ sub startup {
     $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
     $auth->get('/report_v2')->to("builder#report_v2");
     $auth->get('/maps')->to("builder#maps");
-    $auth->get('/geolocation')->to("geolocation#begin");
-    $auth->get('/geolocation/status')->to("geolocation#status");
-    $auth->post('/geolocation/save')->to("geolocation#save_changes");
+    $auth->get('/geolocation')->to("builder#start_geolocation");
+    $auth->get('/geolocation/status')->to("builder#geolocation_status");
+    $auth->post('/geolocation/save')->to("builder#save_geolocation_changes");
 
     $auth->any('/*any' => { any => '' } => sub {
         my $self = shift;
