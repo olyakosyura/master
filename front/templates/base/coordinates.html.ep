@@ -1,5 +1,6 @@
 % layout 'index';
 
+<div class='table-1'>
 <table>
     <tr>
         <th>ID</th>
@@ -15,6 +16,7 @@
     </tr>
 % }
 </table>
+</div>
 <p class="row-button">
     <a href="#" onclick="save_content(''); return false;">Сохранить результаты</a>
 </p>
