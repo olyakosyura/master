@@ -2,21 +2,44 @@
 
 %= javascript begin
 ymaps.ready(init);
-var myMap,
-    myPlacemark;
+var map, placemarks, clusterer;
 
 function init(){
-    myMap = new ymaps.Map("map", {
+    map = new ymaps.Map("map", {
         center: [55.76, 37.64],
-        zoom: 7
+        zoom: 9,
+        behaviors: ['default', 'scrollZoom'],
     });
 
-    myPlacemark = new ymaps.Placemark([55.76, 37.64], {
-    hintContent: 'Москва!',
-    balloonContent: 'Столица России'
-});
+    placemarks = {
+% for my $item (@$geoobjects) {
+%   next unless $item->{coordinates};
+%   my @coords = split /\s+/, $item->{coordinates};
+    '<%= $item->{id} %>': new ymaps.Placemark(
+        [ <%= join ',', reverse @coords %> ],
+        {
+            balloonContent: '<%= $item->{name} %>',
+        }, {
+            preset: 'islands#icon',
+            iconColor: '#0095b6',
+        }),
+% }
+    };
 
-myMap.geoObjects.add(myPlacemark);
+    clusterer = new ymaps.Clusterer({
+        preset: 'islands#invertedVioletClusterIcons',
+        gridSize: 50,
+        groupByCoordinates: false,
+        clusterDisableClickZoom: true,
+        clusterHideIconOnBalloonOpen: false,
+        geoObjectHideIconOnBalloonOpen: false
+    });
+
+    for (var item in placemarks) {
+        clusterer.add(placemarks[item]);
+    }
+
+    map.geoObjects.add(clusterer);
 }
 % end
 

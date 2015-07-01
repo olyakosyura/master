@@ -90,6 +90,13 @@ sub maps {
     return $self->render(template => 'base/internal_err') unless $r && $r->{companies};
     $self->stash(companies => $r->{companies});
 
+    $r = send_request($self,
+        url => 'geolocation/objects',
+        port => DATA_PORT,
+    );
+    return $self->render(template => 'base/internal_err') unless $r;
+    $self->stash(geoobjects => $r);
+
     return $self->render(template => 'base/maps');
 }
 
