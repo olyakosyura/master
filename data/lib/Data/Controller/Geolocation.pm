@@ -20,7 +20,8 @@ sub url {
 }
 
 sub _get_buildings {
-    return select_all(shift, "select id, name, coordinates from buildings where status = 'Голова'");
+    return select_all(shift, "select b.id as id, b.name as name, b.coordinates as coordinates, bm.characteristic as characteristic " .
+        "from buildings b join buildings_meta bm on b.id = bm.building_id where b.status = 'Голова'");
 }
 
 sub start_geolocation {

@@ -95,7 +95,30 @@ sub maps {
         port => DATA_PORT,
     );
     return $self->render(template => 'base/internal_err') unless $r;
-    $self->stash(geoobjects => $r);
+
+    # Following crazy code is really needed because buildings characteristics in DB
+    # have cyrillic characters, which are different from perl utf-8 cyrillic chars =(
+    # Just close your eyes and cry...
+    my %characteristics;
+    my @_colors = qw( #33CCCC #66CC66 #9933CC #FF9999 #FFCC33 #CC6699 #9999FF #CC99FF );
+    for (@$r) {
+        $characteristics{$_->{characteristic}} = 1;
+    }
+
+    my %colors;
+    my $i = 0;
+    for (sort keys %characteristics) {
+        $colors{$_} = $_colors[$i++] || '#000000';
+    }
+    $colors{unknown} = '#336600';
+
+    $self->stash(geoobjects => [ map {
+        my $o = $_;
+        $o ? {
+            (map { $_ => $o->{$_} } qw( name coordinates id )),
+            color => $colors{$o->{characteristic} || 'unknown'},
+        } : {}
+    } @$r ]);
 
     return $self->render(template => 'base/maps');
 }

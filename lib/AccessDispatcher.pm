@@ -66,6 +66,12 @@ my %access_control = (
         roles  => 'user',
     },
 
+    'company'   => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'user',
+    },
+
     'buildings' => {
         method => 'get',
         access => 'Authorized',

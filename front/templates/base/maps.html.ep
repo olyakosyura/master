@@ -21,7 +21,7 @@ function init(){
             balloonContent: '<%= $item->{name} %>',
         }, {
             preset: 'islands#icon',
-            iconColor: '#0095b6',
+            iconColor: '<%= $item->{color} %>',
         }),
 % }
     };
@@ -30,16 +30,23 @@ function init(){
         preset: 'islands#invertedVioletClusterIcons',
         gridSize: 50,
         groupByCoordinates: false,
-        clusterDisableClickZoom: true,
+        clusterDisableClickZoom: false,
         clusterHideIconOnBalloonOpen: false,
         geoObjectHideIconOnBalloonOpen: false
     });
 
     for (var item in placemarks) {
+        placemarks[item].events.add('balloonopen', function (i) { return function (e) { on_baloon_open(i); } }(item));
         clusterer.add(placemarks[item]);
     }
 
     map.geoObjects.add(clusterer);
+}
+
+function on_baloon_open(baloon_id) {
+    $.get('<%= $general_url %>/company_info?obj_id=' + baloon_id, function (data) {
+        
+    });
 }
 % end
 
@@ -73,6 +80,11 @@ function init(){
       </div>
       <!-- / -->
     </form>
+</div>
+
+<div class="table-1" id="baloon-info" style="display: hidden;">
+    <p id="baloon-addr"></p>
+    <div id="baloon-info-parts"></div>
 </div>
 
 <script src="<%= $general_url %>/js/functions.js"></script>

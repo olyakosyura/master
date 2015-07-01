@@ -12,10 +12,7 @@ my %access_rules = (
     '/objects'   => 'manager',
     '/users'     => 'admin',
     '/maps'      => 'user',
-
     '/geolocation'          => 'admin',
-    '/geolocation/status'   => 'admin',
-    '/geolocation/save'     => 'admin',
 );
 
 # This method will run once at server start
@@ -78,6 +75,7 @@ sub startup {
     $auth->get('/geolocation')->to("builder#start_geolocation");
     $auth->get('/geolocation/status')->to("builder#geolocation_status");
     $auth->post('/geolocation/save')->to("builder#save_geolocation_changes");
+    $auth->get('/company')->to('builder#company_info');
 
     $auth->any('/*any' => { any => '' } => sub {
         my $self = shift;
