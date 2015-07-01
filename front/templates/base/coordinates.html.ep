@@ -36,7 +36,7 @@
                     if (pending)
                         return;
                     pending = 1;
-                    $.get('<%= $general_url %>/geolocation/status?req_id=<%= $req_id %>&last_id=' + last_id, function (data) {
+                    $.get('<%= $general_url %>/cgi-bin/geolocation/status?req_id=<%= $req_id %>&last_id=' + last_id, function (data) {
                         if (!data) {
                             alert("Pending failed");
                             __drop_timer();
@@ -119,7 +119,7 @@
             }
         }
 
-        $.post('<%= $general_url %>/geolocation/save', JSON.stringify({ req_id: '<%= $req_id %>', to_save: to_send }), function (data) {
+        $.post('<%= $general_url %>/cgi-bin/geolocation/save', JSON.stringify({ req_id: '<%= $req_id %>', to_save: to_send }), function (data) {
             if (data) {
                 alert(data.saved + " addresses saved");
             } else {

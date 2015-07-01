@@ -138,35 +138,4 @@ sub start_geolocation {
     return $self->render(template => 'base/coordinates');
 }
 
-sub geolocation_status {
-    my $self = shift;
-
-    my $r = send_request($self,
-        url => 'geolocation/status',
-        port => DATA_PORT,
-        args => {
-            req_id => $self->param('req_id') || -1,
-            last_id => $self->param('last_id') || 0,
-        },
-    );
-
-    return $self->render(template => 'base/internal_err') unless $r && ($r->{status} || '') eq '200';
-    return $self->render(json => $r);
-}
-
-sub save_geolocation_changes {
-    my $self = shift;
-    my $args = $self->req->text;
-
-    my $r = send_request($self,
-        url => 'geolocation/save',
-        port => DATA_PORT,
-        method => 'POST',
-        data => $args,
-    );
-
-    return $self->render(template => 'base/internal_err') unless $r && ($r->{status} || '') eq '200';
-    return $self->render(json => $r);
-}
-
 1;

@@ -174,7 +174,7 @@ sub save_changes {
     my $q = prepare_query($self, "update buildings set coordinates = ? where id = ?");
     my $count = 0;
     for (@$data_to_save) {
-        next unless $_->{id} and $saved_content->{$_->{id}};
+        next unless $_->{id} and $saved_content{$_->{id}};
         if ($saved_content{$_->{id}} and $saved_content{$_->{id}}{$_->{val}}) {
             $self->app->log->debug("Updating coords for id $_->{id} ($_->{val})");
             ++$count;

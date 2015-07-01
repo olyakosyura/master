@@ -114,6 +114,18 @@ my %access_control = (
         roles => 'manager',
     },
 
+    'geolocation/status' => {
+        method => 'get',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
+    'geolocation/save' => {
+        method => 'post',
+        access => 'Authorized',
+        roles  => 'admin',
+    },
+
     'session' => {
         method => 'any',
         access => 'full',
