@@ -108,7 +108,7 @@ sub start_geolocation {
         port => DATA_PORT,
     );
 
-    return $self->render(template => 'base/internal_err') unless $r && $r->{status} == 200;
+    return $self->render(template => 'base/internal_err') unless $r && ($r->{status} || "") eq '200';
 
     $self->stash(db_data => $r->{objects});
     $self->stash(req_id => $r->{req_id});
@@ -127,7 +127,7 @@ sub geolocation_status {
         },
     );
 
-    return $self->render(template => 'base/internal_err') unless $r && $r->{status} == 200;
+    return $self->render(template => 'base/internal_err') unless $r && ($r->{status} || '') eq '200';
     return $self->render(json => $r);
 }
 
@@ -142,7 +142,7 @@ sub save_geolocation_changes {
         data => $args,
     );
 
-    return $self->render(template => 'base/internal_err') unless $r && $r->{status} == 200;
+    return $self->render(template => 'base/internal_err') unless $r && ($r->{status} || '') eq '200';
     return $self->render(json => $r);
 }
 
