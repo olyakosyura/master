@@ -117,4 +117,31 @@ sub calc_types {
 
 }
 
+sub company_info {
+    my $self = shift;
+
+    my $obj_id = $self->param('obj_id');
+    return $self->render(json => { status => 400, error => 'obj_id is undefined' }) unless defined $obj_id;
+
+    my $r = select_all $self, "select c.id as company_id, c.name as company_name, b.name as addr " .
+        "from buildings b join companies c on c.id = b.company_id where b.id = ?", $obj_id;
+
+    return $self->render(json => { status => 500, error => 'db error' }) unless defined $r;
+    return $self->render(json => { status => 200, error => 'object not found' }) unless @$r;
+
+    $r = $r->[0];
+    my $c_id = $r->{company_id};
+    my %to_return = (
+        company => $r->{company_name},
+        addr => $r->{addr},
+    );
+
+    $r = select_all $self, "select status, name as addr, corpus, id, status = 'Голова' as is_primary from buildings where company_id = ?", $c_id;
+    return $self->render(json => { status => 500, error => 'db_error' }) unless defined $r;
+
+    $to_return{buildings} = $r;
+    $to_return{count} = scalar @$r;
+    return $self->render(json => \%to_return);
+}
+
 1;

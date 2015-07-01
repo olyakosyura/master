@@ -22,6 +22,7 @@ sub startup {
 
     $r->get('/districts')->to('data#districts');
     $r->get('/companies')->to('data#companies');
+    $r->get('/company')->to('data#company_info');
     $r->get('/buildings')->to('data#buildings');
     $r->get('/objects')->to('data#objects');
     $r->get('/calc_types')->to('data#calc_types');

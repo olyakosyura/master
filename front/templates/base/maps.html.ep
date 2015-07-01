@@ -43,9 +43,32 @@ function init(){
     map.geoObjects.add(clusterer);
 }
 
+function change_baloon(id) {
+
+}
+
 function on_baloon_open(baloon_id) {
-    $.get('<%= $general_url %>/company_info?obj_id=' + baloon_id, function (data) {
-        
+    $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id, function (data) {
+        if (!data)
+            return;
+
+        var $baloon_info = $("#baloon-info"),
+            $addr = $baloon_info.find("#baloon-addr"),
+            $info = $baloon_info.find("#baloon-info-parts"),
+            html = '';
+
+        $addr.text(data.company);
+        for (var i = 0; i < data.count; ++i) {
+            var tag = 'p', tag_info = '';
+            if (data.buildings[i].is_primary == '1') {
+                tag = 'a';
+                tag_info = " href='#' onclick='change_baloon(" + data.buildings[i].id + "); return false;'";
+            }
+            html += "<" + tag + tag_info + ">" + data.buildings[i].addr + "</" + tag + "><br>";
+        }
+
+        $info.html(html);
+        $baloon_info.show();
     });
 }
 % end
@@ -82,7 +105,7 @@ function on_baloon_open(baloon_id) {
     </form>
 </div>
 
-<div class="table-1" id="baloon-info" style="display: hidden;">
+<div class="table-1" id="baloon-info" style="display: none;">
     <p id="baloon-addr"></p>
     <div id="baloon-info-parts"></div>
 </div>

@@ -73,7 +73,6 @@ sub startup {
     $auth->get('/report_v2')->to("builder#report_v2");
     $auth->get('/maps')->to("builder#maps");
     $auth->get('/geolocation')->to("builder#start_geolocation");
-    $auth->get('/company')->to('builder#company_info');
 
     $auth->any('/*any' => { any => '' } => sub {
         my $self = shift;
