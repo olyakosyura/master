@@ -44,7 +44,24 @@ function init(){
 }
 
 function change_baloon(id) {
+    var placemark = placemarks[id];
+    if (!placemark)
+        return;
 
+    map.setCenter(placemark.geometry.getBounds()[0], 15, {
+        checkZoomRange: true,
+        callback: function() {
+            placemark[id].events.add('mapchange', function(e) {
+                // point found
+                if (e.get('newMap') != null) {
+                    // point loaded
+                    setTimeout(function() {
+                        placemark.balloon.open();
+                    }, 300);
+                }
+            });
+        }
+    });
 }
 
 function on_baloon_open(baloon_id) {
