@@ -9,14 +9,8 @@ function init(){
 % for my $item (@$geoobjects) {
 %   next unless $item->{coordinates};
 %   my @coords = split /\s+/, $item->{coordinates};
-    '<%= $item->{id} %>': new ymaps.Placemark(
-        [ <%= join ',', reverse @coords %> ],
-        {
-            balloonContent: '<%= $item->{name} %>',
-        }, {
-            preset: 'islands#icon',
-            iconColor: '<%= $item->{color} %>',
-        }),
+%   my $content = $item->{name};
+    '<%= $item->{id} %>':new ymaps.Placemark([<%= join ',', reverse @coords %>],{balloonContent:'<%= $content %>'},{preset:'islands#icon',iconColor:'<%= $item->{color} %>'}),
 % }
     };
 
