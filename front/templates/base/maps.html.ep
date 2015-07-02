@@ -64,7 +64,7 @@ function change_baloon(id) {
     });
 }
 
-function on_baloon_open(baloon_id) {
+function on_baloon_open(baloon_id, need_change_pos) {
     $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id, function (data) {
         if (!data)
             return;
@@ -72,7 +72,8 @@ function on_baloon_open(baloon_id) {
         var $baloon_info = $("#baloon-info"),
             $addr = $baloon_info.find("#baloon-addr"),
             $info = $baloon_info.find("#baloon-info-parts"),
-            html = '';
+            html = '',
+            pos_changed = false;
 
         $addr.text(data.company);
         for (var i = 0; i < data.count; ++i) {
@@ -80,6 +81,10 @@ function on_baloon_open(baloon_id) {
             if (data.buildings[i].is_primary == '1') {
                 tag = 'a';
                 tag_info = " href='#' onclick='change_baloon(" + data.buildings[i].id + "); return false;'";
+                if (need_change_pos && !pos_changed) {
+                    pos_changed = true;
+                    change_baloon(data.buildings[i].id);
+                }
             }
             html += "<" + tag + tag_info + ">" + data.buildings[i].addr + "</" + tag + "><br>";
         }
@@ -88,6 +93,11 @@ function on_baloon_open(baloon_id) {
         $baloon_info.show();
     });
 }
+
+function on_company_changed(e) {
+    on_baloon_open(e.target.value, true);
+}
+
 % end
 
 <!-- report-request-form -->
@@ -131,5 +141,7 @@ function on_baloon_open(baloon_id) {
 %= javascript begin
     var elements = ['regions', 'companies'];
     select_change_controller(elements, '<%= $general_url %>');
+
+    $("#companies").on('change', on_company_changed);
 % end
 
