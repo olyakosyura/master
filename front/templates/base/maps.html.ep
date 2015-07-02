@@ -112,15 +112,25 @@ function on_baloon_open(baloon_id, need_change_pos) {
     });
 }
 
-function on_company_changed(e) {
-    if (e.target.value == -1) {
+function on_filter_type_changed(e) {
+    ['cost', 'type', 'repair'].map(function (t) {
+        $("#filter-" + t + "-container").hide();
+    });
+
+    if (e.target.value == 'none') {
         set_placemarks(placemarks);
         return;
     }
 
-    $.get('<%= $general_url %>/cgi-bin/objects/short?company=' + e.target.value, function (data) {
-        if (data.error) {
-            console.log(data.error);
+    var $container = $("#filter-" + e.target.value + "-container");
+    $container.show();
+}
+
+function do_filter(type, args) {
+    $.get("<%= $general_url %>/cgi-bin/objects/filter?type=" + type + "&" + $.param(args), function (data) {
+        if (!data || data.error) {
+            if (data)
+                console.log("ERROR: " + data.error);
             return;
         }
 
@@ -129,6 +139,7 @@ function on_company_changed(e) {
 
         var placemarks_list = {},
             main_office = -1;
+
         for (var i = 0; i < data.count; ++i) {
             if (placemarks[data.data[i].id]) {
                 if (main_office == -1)
@@ -144,6 +155,56 @@ function on_company_changed(e) {
     });
 }
 
+function on_company_changed(e) {
+    if (e.target.value == -1) {
+        set_placemarks(placemarks);
+        return;
+    }
+
+    do_filter("company", { company: e.target.value });
+}
+
+function do_filter_cost() {
+    var start = $("#filter-cost-start").val(),
+        end = $("#filter-cost-end").val(),
+        args = {
+            start: start,
+            end: end,
+        };
+
+    if (start == "" && end == "")
+        set_placemarks(placemarks);
+    else
+        do_filter("cost", args);
+}
+
+function do_filter_type() {
+    var to_request = [];
+
+    $('#filter-type-container>input:checkbox').map(function () {
+        if (this.checked)
+            to_request.push(this.value);
+    });
+
+    if (to_request.length == 0)
+        set_placemarks(placemarks);
+    else
+        do_filter("type", { types: to_request.join(',') });
+}
+
+function do_filter_repair() {
+    var start = $("#filter-repair-start").val(),
+        end = $("#filter-repair-end").val(),
+        args = {
+            start: start,
+            end: end,
+        };
+
+    if (start == "" && end == "")
+        set_placemarks(placemarks);
+    else
+        do_filter("repair", args);
+}
 % end
 
 <!-- report-request-form -->
@@ -176,6 +237,46 @@ function on_company_changed(e) {
       </div>
       <!-- / -->
     </form>
+
+    <form>
+      <!--  -->
+      <label for="filter-type">Фильтровать</label>
+      <div>
+        <select name="filter-type" id="filter-types">
+          <option value="none" selected>Без фильрации</option>
+          <option value="cost">Фильтровать по стоимости</option>
+          <option value="type">Фильтровать по типу учреждения</option>
+          <option value="repair">Фильтровать по моменту кап ремонта</option>
+        </select>
+      </div>
+      <!-- / -->
+
+      <div id="filter-cost-container" style="display: none;">
+          <p>Диапазон стоимостей:</p>
+          <label for="inp-filter-cost-start">От</label>
+          <input type="text" name="inp-filter-cost-start" id="filter-cost-start"><br>
+          <label for="inp-filter-cost-end">До</label>
+          <input type="text" name="inp-filter-cost-end" id="filter-cost-end"><br>
+          <input type="button" name="do-filter-cost" value="Фильтровать" onclick="do_filter_cost()">
+      </div>
+
+      <div id="filter-type-container" style="display: none;">
+          <label for="filter-type">Тип учреждений:</label>
+% for my $t (@$objects_types) {
+          <input type="checkbox" name="filter-type" value="<%= $t %>"><%= $t %><br>
+% }
+          <input type="button" name="do-filter-type" value="Фильтровать" onclick="do_filter_type()">
+      </div>
+
+      <div id="filter-repair-container" style="display: none;">
+          <p>Диапазон стоимостей:</p>
+          <label for="inp-filter-repair-start">От</label>
+          <input type="text" name="inp-filter-repair-start" id="filter-repair-start"><br>
+          <label for="inp-filter-repair-end">До</label>
+          <input type="text" name="inp-filter-repair-end" id="filter-repair-end"><br>
+          <input type="button" name="do-filter-repair" value="Фильтровать" onclick="do_filter_repair()">
+      </div>
+    </form>
 </div>
 
 <div class="table-1" id="baloon-info" style="display: none;">
@@ -189,5 +290,6 @@ function on_company_changed(e) {
     select_change_controller(elements, '<%= $general_url %>');
 
     $("#companies").on('change', on_company_changed);
+    $("#filter-types").on('change', on_filter_type_changed);
 % end
 

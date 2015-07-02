@@ -84,7 +84,7 @@ my %access_control = (
         roles => 'user',
     },
 
-    'objects/short' => {
+    'objects/filter' => {
         method => 'get',
         access => 'Authorized',
         roles => 'user',

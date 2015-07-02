@@ -109,13 +109,70 @@ sub objects {
     return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
 }
 
-sub objects_list {
+sub filter_objects {
     my $self = shift;
 
-    my $co_id = $self->param('company');
-    return $self->render(json => { status => 400, error => 'company is required' }) unless defined $co_id;
+    my $bounds = sub {
+        my $a = $self->param('start');
+        my $b = $self->param('end');
 
-    my $r = select_all($self, "select id from buildings where company_id = ?", $co_id);
+        die "invalid bounds\n" unless defined($a) && defined($b);
+
+        $a ||= 0;
+        $b ||= 0;
+
+        if ($a > $b) {
+            ($a, $b) = ($b, $a);
+        }
+
+        ($a, $b);
+    };
+
+    my $types_param = sub {
+        my $arg = $self->param('types');
+        die "types are required\n" unless defined $arg;
+        split ',', $arg;
+    };
+
+    my %cases = (
+        company => {
+            req => "select id from buildings where company_id = ?",
+            args => sub {
+                my $arg = $self->param("company");
+                die "company id is required\n" unless defined $arg;
+                $arg;
+            },
+        },
+        cost => {
+            req => "select distinct(building_id) as id from buildings_meta where cost > ? and cost < ?",
+            args => $bounds,
+        },
+        repair => {
+            req => "select distinct(building_id) as id from buildings_meta where reconstruction_date > ? and reconstruction_date < ?",
+            args => $bounds,
+        },
+        type => {
+            req => "select distinct(building_id) as id from buildings_meta where characteristic in (%s)",
+            post => sub {
+                join ',', map { '?' } (1 .. (scalar $types_param->()))
+            },
+            args => $types_param,
+        },
+    );
+
+    my ($req, @args);
+    eval {
+        for my $type (keys %cases) {
+            if ($self->param('type') eq $type) {
+                $req = sprintf $cases{$type}->{req}, ($cases{$type}->{post} || sub {})->();
+                @args = $cases{$type}->{args}->();
+            }
+        }
+    };
+
+    return $self->render(json => { status => 400, error => "$@" }) if $@;
+
+    my $r = select_all($self, $req, @args);
     return $self->render(json => { status => 500, error => "db_error" }) unless defined $r;
 
     return $self->render(json => { status => 200, count => scalar(@$r), data => $r });
@@ -126,7 +183,6 @@ sub calc_types {
 
     my $r = select_all $self, "select id, name from calc_types order by order_index";
     return $self->render(json => { ok => 1, count => scalar @$r, types => $r });
-
 }
 
 sub company_info {

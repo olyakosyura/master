@@ -102,6 +102,7 @@ sub maps {
     my %characteristics;
     my @_colors = qw( #33CCCC #66CC66 #9933CC #FF9999 #FFCC33 #CC6699 #9999FF #CC99FF );
     for (@$r) {
+        next unless $_->{characteristic};
         $characteristics{$_->{characteristic}} = 1;
     }
 
@@ -119,6 +120,7 @@ sub maps {
             color => $colors{$o->{characteristic} || 'unknown'},
         } : {}
     } @$r ]);
+    $self->stash(objects_types => [ sort keys %characteristics ]);
 
     return $self->render(template => 'base/maps');
 }
