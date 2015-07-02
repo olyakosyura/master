@@ -109,6 +109,18 @@ sub objects {
     return $self->render(json => { ok => 1, count => scalar @$r, objects => $r });
 }
 
+sub objects_list {
+    my $self = shift;
+
+    my $co_id = $self->param('company');
+    return $self->render(json => { status => 400, error => 'company is required' }) unless defined $co_id;
+
+    my $r = select_all($self, "select id from buildings where company_id = ?", $co_id);
+    return $self->render(json => { status => 500, error => "db_error" }) unless defined $r;
+
+    return $self->render(json => { status => 200, count => scalar(@$r), data => $r });
+}
+
 sub calc_types {
     my $self = shift;
 
