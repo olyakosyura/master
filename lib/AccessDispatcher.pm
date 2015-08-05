@@ -241,7 +241,7 @@ sub send_request {
         FRONT_PORT()    => FRONT_HOST,
         LOGIC_PORT()    => LOGIC_HOST,
         DATA_PORT()     => DATA_HOST,
-        FILES_PORT()    => FILES_LISEN,
+        FILES_PORT()    => FILES_HOST,
     );
 
     $args{url} = "http://$hosts{$args{port}}/$args{url}" if defined $args{url};
