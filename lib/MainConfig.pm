@@ -14,6 +14,13 @@ my %PARAMS = (
     DATA_PORT       => 6001,
     SESSION_PORT    => 6002,
     LOGIC_PORT      => 6003,
+    FILES_PORT      => 6004,
+
+    FRONT_HOST      => 'localhost',
+    DATA_HOST       => 'localhost',
+    SESSION_HOST    => 'localhost',
+    LOGIC_HOST      => 'localhost',
+    FILES_HOST      => 'localhost',
 
     DB_HOST         => 'localhost',
     DB_PORT         => 3306,

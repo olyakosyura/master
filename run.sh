@@ -43,7 +43,7 @@ fi
 
 for var in 'session' 'logic' 'data' 'front'
 do
-    path=$(echo -n $var | perl -ne '$_ = uc $_;  printf "\"http://\$$_%s:\$$_%s\"", "_LISTEN", "_PORT"')
+    path=$(echo -n $var | perl -ne '$_ = uc $_;  printf "\"http://\$$_%s:\$$_%s\"", "_HOST", "_PORT"')
     path=$(eval "echo $path")
     bash ./real_run.sh $var $path $pidsf &
     echo -n "$! " >> $pidsf

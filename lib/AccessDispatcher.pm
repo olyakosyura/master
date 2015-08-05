@@ -236,7 +236,15 @@ sub send_request {
 
     my $url = $args{url};
 
-    $args{url} = "http://localhost/$args{url}" if defined $args{url};
+    our %hosts = (
+        SESSION_PORT()  => SESSION_HOST,
+        FRONT_PORT()    => FRONT_HOST,
+        LOGIC_PORT()    => LOGIC_HOST,
+        DATA_PORT()     => DATA_HOST,
+        FILES_PORT()    => FILES_LISEN,
+    );
+
+    $args{url} = "http://$hosts{$args{port}}/$args{url}" if defined $args{url};
 
     croak 'url not specified' unless $args{url};
 
