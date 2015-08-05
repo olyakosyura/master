@@ -22,6 +22,10 @@ my %PARAMS = (
     LOGIC_HOST      => 'localhost',
     FILES_HOST      => 'localhost',
 
+    ROOT_FILES_PATH => '.',
+    URL_404         => '/404.html',
+    URL_401         => '/login.html',
+
     DB_HOST         => 'localhost',
     DB_PORT         => 3306,
     DB_NAME         => undef,
