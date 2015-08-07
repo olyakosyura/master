@@ -78,7 +78,7 @@ sub list {
         push @content, {
             name => $fname,
             size => $s->size,
-            url => "http://" . FILES_HOST . "/file?f=$data",
+            url => "http://" . FILES_URL . "/file?f=$data",
         };
         $i++;
     }
