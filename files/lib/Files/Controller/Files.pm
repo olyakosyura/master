@@ -6,6 +6,7 @@ use warnings;
 
 use Cache::Memcached;
 use MIME::Base64 qw( encode_base64url decode_base64url );
+use Encode qw( decode );
 
 use DB qw( :all );
 use AccessDispatcher qw( check_session );
@@ -67,12 +68,14 @@ sub list {
 
     $i = 0;
     for my $f (sort @files) {
-        next if $f =~ /^\.\.?$/;
-        my $s = stat "$path/$f";
+        my $fname = decode('utf8', $f);
+
+        next if $fname =~ /^\.\.?$/;
+        my $s = stat "$path/$fname";
 
         my $data = encode_base64url pack "iiiii", $district_id, $company_id, $i, $s->size, $s->mtime;
         push @content, {
-            name => $f,
+            name => $fname,
             size => $s->size,
             url => "http://" . FILES_HOST . "/file?f=$data",
         };
@@ -108,7 +111,7 @@ sub get {
     my @files = readdir $dir;
     closedir $dir;
 
-    $path = "$path/$files[$index]";
+    $path = "$path/" . decode('utf8', $files[$index]);
     my $s = stat $path;
     if ($s->size != $size or $s->mtime != $mtime) {
         $self->app->log->error("File outdated");
