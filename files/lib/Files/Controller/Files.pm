@@ -9,7 +9,7 @@ use MIME::Base64 qw( encode_base64url decode_base64url );
 
 use DB qw( :all );
 use AccessDispatcher qw( check_session );
-use MainConfig;
+use MainConfig qw( :all );
 
 sub open_memc {
     my $self = shift;
@@ -25,10 +25,8 @@ sub load_paths {
     $self->open_memc;
 
     unless ($self->{memc}->get('files_cache_expire_flag')) {
-        $self->{memc}->set('files_cache_expire_flag', 1, EXP_TIME);
-
         my $r = select_all($self, 'select f.id as id, f.path as path, d.name as district, d.id as district_id, ' .
-            'c.id as compny_id, c.name as company from files f ' .
+            'c.id as company_id, c.name as company from files f ' .
             'join districts d on d.id = f.district_id join companies c on c.id = f.company_id');
 
         return $self->app->log->error("Can't fetch files from DB") unless $r;
@@ -36,6 +34,8 @@ sub load_paths {
         for my $row (@$r) {
             $self->{memc}->set('files_paths_cache_' . $row->{district_id} . '_' . $row->{company_id}, $row, EXP_TIME);
         }
+
+        $self->{memc}->set('files_cache_expire_flag', 1, EXP_TIME) if @$r;
     }
 }
 
@@ -57,6 +57,7 @@ sub list {
 
     return $self->render(json => { error => "invalid district or company" }) unless $data;
 
+    my $dir;
     my $path = ROOT_FILES_PATH . "/$data->{path}";
     opendir $dir, $path;
     my @files = readdir $dir;
@@ -64,7 +65,7 @@ sub list {
 
     my @content;
 
-    my $i = 0;
+    $i = 0;
     for my $f (sort @files) {
         next if $f =~ /^\.\.?$/;
         my $s = stat "$path/$f";
@@ -101,6 +102,7 @@ sub get {
         ++$i;
     }
 
+    my $dir;
     my $path = ROOT_FILES_PATH . "/$data->{path}";
     opendir $dir, $path;
     my @files = readdir $dir;
@@ -113,7 +115,7 @@ sub get {
         return $self->redirect_to(URL_404);
     }
 
-    my $r = check_session $self;
+    my $ret = check_session $self;
 
     $self->session(expires => 1) if $ret->{error};
     return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} ne 'unauthorized';
