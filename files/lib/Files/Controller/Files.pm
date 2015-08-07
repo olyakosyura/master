@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 use Cache::Memcached;
-use MIME::Base64 qw( encode_base64_url decode_base64_url );
+use MIME::Base64 qw( encode_base64url decode_base64url );
 
 use DB qw( :all );
 use AccessDispatcher qw( check_session );
@@ -68,7 +68,7 @@ sub list {
         next if $f =~ /^\.\.?$/;
         my $s = stat "$path/$f";
 
-        my $data = encode_base64_url pack "iiiii", $district_id, $company_id, $i, $s->size, $s->mtime;
+        my $data = encode_base64url pack "iiiii", $district_id, $company_id, $i, $s->size, $s->mtime;
         push @content, {
             name => $f,
             size => $s->size,
@@ -86,7 +86,7 @@ sub get {
     my $f_info = $self->param('f');
     return $self->redirect_to(URL_404) unless $f_info;
 
-    my ($district_id, $company_id, $index, $size, $mtime) = unpack 'iiiii', decode_base64_url($f_info);
+    my ($district_id, $company_id, $index, $size, $mtime) = unpack 'iiiii', decode_base64url($f_info);
     unless (defined $district_id and defined $company_id and defined $index and defined $size and defined $mtime) {
         $self->app->log->error("Invalid f hash came");
         return $self->redirect_to(URL_404);
