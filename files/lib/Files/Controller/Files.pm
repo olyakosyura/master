@@ -7,6 +7,7 @@ use warnings;
 use Cache::Memcached;
 use MIME::Base64 qw( encode_base64url decode_base64url );
 use Encode qw( decode );
+use File::stat;
 
 use DB qw( :all );
 use AccessDispatcher qw( check_session );
@@ -79,6 +80,7 @@ sub list {
             size => $s->size,
             url => "http://" . FILES_HOST . "/file?f=$data",
         };
+        $i++;
     }
 
     return $self->render(json => { files => \@content });
