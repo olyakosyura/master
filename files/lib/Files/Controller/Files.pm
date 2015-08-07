@@ -9,6 +9,7 @@ use MIME::Base64 qw( encode_base64url decode_base64url );
 
 use DB qw( :all );
 use AccessDispatcher qw( check_session );
+use MainConfig;
 
 sub open_memc {
     my $self = shift;
