@@ -2,7 +2,7 @@ package Front;
 use Mojo::Base 'Mojolicious';
 
 use AccessDispatcher qw( send_request role_less_then );
-use MainConfig qw( GENERAL_URL SESSION_PORT );
+use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
     '/'          => 'user',
@@ -55,6 +55,7 @@ sub startup {
         return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
 
         $self->stash(general_url => GENERAL_URL, url => $url);
+        $self->stash(files_url => FILES_HOST);
         $self->stash(%$res); # login name lastname role uid email objects_count
 
         if (!role_less_then $res->{role}, $access_rules{$url} || 'admin') {

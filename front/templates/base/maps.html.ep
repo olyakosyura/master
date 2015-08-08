@@ -83,7 +83,12 @@ function change_baloon(id) {
 }
 
 function on_baloon_open(baloon_id, need_change_pos) {
-    $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id, function (data) {
+    var district_id = $("#regions :selected").attr('district_id'),
+        company_id = $("#companies").val();
+    $.when(
+        $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id)
+        $.get('<%= $files_url %>/files')
+    ).done(function (data, files) {
         if (!data)
             return;
 
@@ -104,7 +109,7 @@ function on_baloon_open(baloon_id, need_change_pos) {
                     change_baloon(data.buildings[i].id);
                 }
             }
-            html += "<" + tag + tag_info + ">" + data.buildings[i].addr + "</" + tag + "><br>";
+            html += "<" + tag + tag_info + ">" + data.buildings[i].addr + "</" + tag + ">" + files + "<br>"; // TODO: MAKE ME ACCORDEON
         }
 
         $info.html(html);
@@ -210,17 +215,16 @@ function do_filter_repair() {
 <!-- report-request-form -->
 <div class="report-request-form">
     <h3>Организации на карте</h3>
-    <div id="map" class="report-map"></div>
     <form>
       <!--  -->
       <label for="region">Регион</label>
       <div>
 % my $i = 0; my $current = "Москва";
-% my %regions = map { $_->{region} => $_->{region} } @{$districts->{districts}};
+% my %regions = map { $_->{region} => $_->{id} } @{$districts->{districts}};
         <select name="region" id="regions">
           <option>Выберете регион</option>
 % for (sort keys %regions) {
-          <option value="<%= $regions{$_} %>" <%= $_ eq $current ? "selected" : "" %>><%= $_ %></option>
+          <option value="<%= $_ %>" district_id="<%= $regions{$_} %>" <%= $_ eq $current ? "selected" : "" %>><%= $_ %></option>
 % }
         </select>
       </div>
@@ -277,6 +281,7 @@ function do_filter_repair() {
           <input type="button" name="do-filter-repair" value="Фильтровать" onclick="do_filter_repair()">
       </div>
     </form>
+    <div id="map" class="report-map"></div>
 </div>
 
 <div class="table-1" id="baloon-info" style="display: none;">
