@@ -43,12 +43,13 @@ sub load_paths {
 
 sub add_headers {
     my $self = shift;
-    $self->res->headers->header('Access-Control-Allow-Origin' => 'http://dev.web-vesna.ru/');
+    $self->res->headers->header('Access-Control-Allow-Origin' => 'http://dev.web-vesna.ru');
 }
 
 sub list {
     my $self = shift;
 
+    $self->add_headers;
     my $ret = check_session $self;
 
     $self->session(expires => 1) if $ret->{error};
@@ -94,12 +95,13 @@ sub list {
         $i++;
     }
 
-    $self->add_headers;
     return $self->render(json => { files => \@content });
 }
 
 sub get {
     my $self = shift;
+
+    $self->add_headers;
     $self->load_paths;
 
     my $ret = check_session $self;
@@ -137,7 +139,6 @@ sub get {
         return $self->redirect_to(URL_404);
     }
 
-    $self->add_headers;
     $self->render_file(filepath => $path, filename => $files[$index]);
     return $self->rendered(200);
 }
