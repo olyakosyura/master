@@ -13,8 +13,8 @@ sub startup {
     my $r = $self->routes;
 
     # Normal route to controller
-    $r->get('files')->to('files#list');   # this url can be called only from other service (authorization already checked)
-    $r->get('file')->to('files#get');     # this url should be called fron nginx. Check auth!
+    $r->get('files')->to('files#list');
+    $r->get('file')->to('files#get');
 }
 
 1;

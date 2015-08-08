@@ -43,6 +43,12 @@ sub load_paths {
 
 sub list {
     my $self = shift;
+
+    my $ret = check_session $self;
+
+    $self->session(expires => 1) if $ret->{error};
+    return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} ne 'unauthorized';
+
     $self->load_paths;
 
     my ($district_id, $company_id) = map { $self->param($_) } qw( district company );
@@ -90,6 +96,11 @@ sub get {
     my $self = shift;
     $self->load_paths;
 
+    my $ret = check_session $self;
+
+    $self->session(expires => 1) if $ret->{error};
+    return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} ne 'unauthorized';
+
     my $f_info = $self->param('f');
     return $self->redirect_to(URL_404) unless $f_info;
 
@@ -119,11 +130,6 @@ sub get {
         $self->app->log->error("File outdated");
         return $self->redirect_to(URL_404);
     }
-
-    my $ret = check_session $self;
-
-    $self->session(expires => 1) if $ret->{error};
-    return $self->redirect_to(URL_401) if $ret->{error} && $ret->{error} ne 'unauthorized';
 
     $self->render_file(filepath => $path, filename => $files[$index]);
     return $self->rendered(200);
