@@ -1,5 +1,6 @@
 package Logic;
 use Mojo::Base 'Mojolicious';
+use Mojolicious::Sessions;
 
 use MainConfig qw( :all );
 use AccessDispatcher qw( check_access send_request );
@@ -52,7 +53,11 @@ sub startup {
         return _i_err $self unless $r;
         return $self->render(status => 401, json => { error => "internal", description => $r->{error} }) if !$r or $r->{error};
 
-        $self->session(session => $r->{session_id}, expiration => EXP_TIME);
+        my $s = Mojolicious::Sessions->new;
+        $s->cookie_name('session');
+        $s->default_expiration(EXP_TIME);
+        $s->cookie_domain(".dev.web-vesna.ru");
+        $self->session($s);
         return $self->render(json => { ok => 1 });
     });
 
