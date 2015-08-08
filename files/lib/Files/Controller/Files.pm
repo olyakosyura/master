@@ -41,6 +41,11 @@ sub load_paths {
     }
 }
 
+sub add_headers {
+    my $self = shift;
+    $self->res->headers->header('Access-Control-Allow-Origin' => 'http://dev.web-vesna.ru/');
+}
+
 sub list {
     my $self = shift;
 
@@ -89,6 +94,7 @@ sub list {
         $i++;
     }
 
+    $self->add_headers;
     return $self->render(json => { files => \@content });
 }
 
@@ -131,6 +137,7 @@ sub get {
         return $self->redirect_to(URL_404);
     }
 
+    $self->add_headers;
     $self->render_file(filepath => $path, filename => $files[$index]);
     return $self->rendered(200);
 }
