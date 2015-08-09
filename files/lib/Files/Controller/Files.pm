@@ -43,7 +43,7 @@ sub load_paths {
 
 sub add_headers {
     my $self = shift;
-    $self->res->headers->header('Access-Control-Allow-Origin' => 'http://dev.web-vesna.ru');
+    $self->res->headers->header('Access-Control-Allow-Origin' => 'http://dev.web-vesna.ru'); # TODO: move into config
 }
 
 sub list {
