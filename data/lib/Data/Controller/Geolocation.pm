@@ -20,8 +20,9 @@ sub url {
 }
 
 sub _get_buildings {
-    return select_all(shift, "select b.id as id, b.name as name, b.coordinates as coordinates, bm.characteristic as characteristic " .
-        "from buildings b join buildings_meta bm on b.id = bm.building_id where b.status = 'Голова'");
+    return select_all(shift, "select b.id as id, b.company_id as company_id, c.district_id as district, b.name as name, " .
+        "b.coordinates as coordinates, bm.characteristic as characteristic from buildings b join buildings_meta bm on b.id = bm.building_id " .
+        "join companies c on c.id = b.company_id where b.status = 'Голова'");
 }
 
 sub start_geolocation {

@@ -39,7 +39,7 @@ sub startup {
             port => SESSION_PORT,
             args => {
                 user_agent => $self->req->headers->user_agent,
-                session_id => $self->session('session'),
+                session_id => $self->signed_cookie('session'),
             },
         );
         return $self->render(status => 500) unless $res;

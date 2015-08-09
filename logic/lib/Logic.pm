@@ -1,9 +1,8 @@
 package Logic;
 use Mojo::Base 'Mojolicious';
-use Mojolicious::Sessions;
 
 use MainConfig qw( :all );
-use AccessDispatcher qw( check_access send_request );
+use AccessDispatcher qw( check_access send_request _session );
 
 use File::Temp;
 use Data::Dumper;
@@ -53,11 +52,7 @@ sub startup {
         return _i_err $self unless $r;
         return $self->render(status => 401, json => { error => "internal", description => $r->{error} }) if !$r or $r->{error};
 
-        my $s = Mojolicious::Sessions->new;
-        $s->cookie_name('session');
-        $s->default_expiration(EXP_TIME);
-        $s->cookie_domain(".dev.web-vesna.ru");
-        $self->session($s);
+        _session($self, $r->{session_id});
         return $self->render(json => { ok => 1 });
     });
 
@@ -90,10 +85,10 @@ sub startup {
             port => SESSION_PORT,
             args => {
                 user_agent => $self->req->headers->user_agent,
-                session_id => $self->session('session'),
+                session_id => _session($self),
             });
 
-        $self->session(expires => 1);
+        _session($self, { expires => 1 });
         return $self->render(json => { ok => 1 }) if $r && not $r->{error};
         return $self->_i_err unless $r;
         return $self->render(status => 400, json => { error => "invalid", description => $r->{error} });

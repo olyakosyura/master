@@ -2,17 +2,20 @@
 
 %= javascript begin
 ymaps.ready(init);
-var map, placemarks, clusterer;
+var map, placemarks, clusterer, companies;
 
 function init(){
     placemarks = {
+% my %companies;
 % for my $item (@$geoobjects) {
 %   next unless $item->{coordinates};
 %   my @coords = split /\s+/, $item->{coordinates};
 %   my $content = $item->{name};
+%   $companies{$item->{id}} = "[$item->{company_id},$item->{district}]";
     '<%= $item->{id} %>':new ymaps.Placemark([<%= join ',', reverse @coords %>],{balloonContent:'<%= $content %>'},{preset:'islands#icon',iconColor:'<%= $item->{color} %>'}),
 % }
     };
+    companies = {<%= join ',', map { "$_:$companies{$_}" } keys %companies %>};
 
     for (var item in placemarks) {
         placemarks[item].events.add('balloonopen', function (i) { return function (e) { on_baloon_open(i); } }(item));
@@ -86,11 +89,27 @@ function on_baloon_open(baloon_id, need_change_pos) {
     var district_id = $("#regions :selected").attr('district_id'),
         company_id = $("#companies").val();
     $.when(
-        $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id)
-        $.get('<%= $files_url %>/files')
+        $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id),
+        $.ajax({
+            url: 'http://<%= $files_url %>/files', // FIXME: remove hardcoded 'http'
+            args: {
+                company: companies[baloon_id][0],
+                district: companies[baloon_id][1],
+            },
+            xhrFields: {
+                withCredentials: true,
+            },
+        })
+        //$.get('http://<%= $files_url %>/files?company=' + companies[baloon_id][0] + "&district=" + companies[baloon_id][1])
     ).done(function (data, files) {
         if (!data)
             return;
+
+        if (!files)
+            files = {};
+        else
+            files = files[0];
+        data = data[0];
 
         var $baloon_info = $("#baloon-info"),
             $addr = $baloon_info.find("#baloon-addr"),
