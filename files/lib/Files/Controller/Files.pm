@@ -96,7 +96,7 @@ sub list {
         $i++;
     }
 
-    return $self->render(json => { files => \@content });
+    return $self->render(json => { files => \@content, count => scalar @content });
 }
 
 sub get {
