@@ -130,7 +130,7 @@ sub get {
     my $dir;
     my $path = ROOT_FILES_PATH . "/$data->{path}";
     opendir $dir, $path;
-    my @files = readdir $dir;
+    my @files = map { not /^\.\.?$/ } sort readdir $dir;
     closedir $dir;
 
     $path = "$path/" . decode('utf8', $files[$index]);
