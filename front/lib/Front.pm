@@ -13,6 +13,7 @@ my %access_rules = (
     '/users'     => 'admin',
     '/maps'      => 'user',
     '/geolocation'          => 'admin',
+    '/404.html'  => 'user',
 );
 
 # This method will run once at server start

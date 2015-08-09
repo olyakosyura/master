@@ -92,7 +92,7 @@ function on_baloon_open(baloon_id, need_change_pos) {
         $.get('<%= $general_url %>/cgi-bin/company?obj_id=' + baloon_id),
         $.ajax({
             url: 'http://<%= $files_url %>/files', // FIXME: remove hardcoded 'http'
-            args: {
+            data: {
                 company: companies[baloon_id][0],
                 district: companies[baloon_id][1],
             },
@@ -100,7 +100,6 @@ function on_baloon_open(baloon_id, need_change_pos) {
                 withCredentials: true,
             },
         })
-        //$.get('http://<%= $files_url %>/files?company=' + companies[baloon_id][0] + "&district=" + companies[baloon_id][1])
     ).done(function (data, files) {
         if (!data)
             return;
@@ -114,24 +113,45 @@ function on_baloon_open(baloon_id, need_change_pos) {
         var $baloon_info = $("#baloon-info"),
             $addr = $baloon_info.find("#baloon-addr"),
             $info = $baloon_info.find("#baloon-info-parts"),
-            html = '',
             pos_changed = false;
 
-        $addr.text(data.company);
+        $info.html('');
+        $addr.html($("<b>").text(data.company).html()); // not works =(
         for (var i = 0; i < data.count; ++i) {
-            var tag = 'p', tag_info = '';
+            var container = $("<p>");
             if (data.buildings[i].is_primary == '1') {
-                tag = 'a';
-                tag_info = " href='#' onclick='change_baloon(" + data.buildings[i].id + "); return false;'";
+                container = $("<a>", {
+                    href: '#',
+                    click: function (id) {
+                        return function () {
+                            change_baloon(id);
+                            return false;
+                        }
+                    }(data.buildings[i].id),
+                });
                 if (need_change_pos && !pos_changed) {
                     pos_changed = true;
                     change_baloon(data.buildings[i].id);
                 }
             }
-            html += "<" + tag + tag_info + ">" + data.buildings[i].addr + "</" + tag + ">" + files + "<br>"; // TODO: MAKE ME ACCORDEON
+            container.text(data.buildings[i].addr).appendTo($info);
+            $("<br>").appendTo($info);
         }
 
-        $info.html(html);
+        $("<br>").appendTo($info);
+
+        // generating files list
+        var container=$("<div>", {
+            id: 'files-list',
+        });
+        for (var i = 0; i < files.count; ++i) {
+            $("<a>", {
+                href: files.files[i].url,
+            }).text(files.files[i].name + " (" + (files.files[i].size / 1024 / 1024).toFixed(2) + " Мб)").appendTo(container);
+            $("<br>").appendTo(container);
+        }
+
+        container.appendTo($info);
         $baloon_info.show();
     });
 }
