@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use Mojo::JSON qw( encode_json );
 
 use MainConfig qw( :all );
-use AccessDispatcher qw( send_request check_access );
+use AccessDispatcher qw( send_request check_access _session );
 
 use Data::Dumper;
 
@@ -47,7 +47,7 @@ sub add {
     return return_500 $self unless $r;
     return $self->render(status => 401, json => { error => "internal", description => "session: " . $r->{error} }) if !$r or $r->{error};
 
-    $self->session(session => $r->{session_id});
+    _session($self, $r->{session_id}); # TODO: proxy on session service
     return $self->render(json => { ok => 1 });
 }
 

@@ -116,7 +116,7 @@ sub maps {
     $self->stash(geoobjects => [ map {
         my $o = $_;
         $o ? {
-            (map { $_ => $o->{$_} } qw( name coordinates id )),
+            (map { $_ => $o->{$_} } qw( name coordinates id company_id district )),
             color => $colors{$o->{characteristic} || 'unknown'},
         } : {}
     } @$r ]);

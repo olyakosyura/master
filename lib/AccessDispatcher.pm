@@ -17,6 +17,7 @@ our @EXPORT_OK = qw(
     send_request
     check_session
     role_less_then
+    _session
 );
 
 our %EXPORT_TAGS = (
@@ -151,10 +152,23 @@ my %access_control = (
     },
 );
 
+sub _session {
+    my ($self, $val) = @_;
+
+    if (not defined $val) {
+        return $self->signed_cookie('session');
+    } elsif (ref $val eq 'HASH' && $val->{expired}) {
+        $self->signed_cookie(session => '', { expires => 1 });
+    } else {
+        $self->signed_cookie(session => $val, { expires => time + EXP_TIME, domain => '.dev.web-vesna.ru', path => '/' });
+    }
+    return $self;
+}
+
 sub check_session {
     my $inst = shift;
 
-    my $sid = $inst->session('session');
+    my $sid = _session $inst;
     return { logged => 0, error => 'unauthorized' } unless $sid;
 
     my $ua = $inst->req->headers->user_agent;
@@ -200,7 +214,7 @@ sub check_access {
 
     my $ret = {};
     $ret = check_session($inst);
-    $inst->session(expires => 1) if $ret->{error};
+    _session($inst, { expires => 1 }) if $ret->{error};
     return $ret if $ret->{error} && $ret->{error} ne 'unauthorized';
 
     $ret->{granted} = 1;
