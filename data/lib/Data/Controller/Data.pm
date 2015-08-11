@@ -33,12 +33,14 @@ sub companies {
     my $q = defined $args && $args->{q} || undef;
     my $d = defined $args && $args->{district} || undef;
     my $region = defined $args && $args->{region} || undef;
+    my $filter_heads = defined $args && $args->{heads_only} || undef;
     $q = "%$q%" if $q;
 
     return $self->render(json => { status => 400, error => "invalid district" }) if defined $d && $d !~ /^\d+$/;
 
-    my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d " . 
-        "on d.id = c.district_id " . (defined $q ? "where c.name like ? " : "") .
+    my @args = ($self, "select c.id as id, c.name as name, d.name as district from companies c join districts d on d.id = c.district_id " .
+        ($filter_heads ? "inner join buildings b on c.id = b.company_id and b.status = 'Голова' " : "") .
+        (defined $q ? "where c.name like ? " : "") .
         (defined $d ? (defined $q ? "and" : "where") . " c.district_id=? " : "") .
         (defined $region ? (defined $q || defined $d ? "and" : "where") . " d.region=? " : "") . "order by c.name");
 

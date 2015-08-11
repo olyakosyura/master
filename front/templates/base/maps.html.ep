@@ -188,21 +188,17 @@ function do_filter(type, args) {
         if (data.count == 0)
             return;
 
-        var placemarks_list = {},
-            main_office = -1;
-
+        var placemarks_list = {};
         for (var i = 0; i < data.count; ++i) {
             if (placemarks[data.data[i].id]) {
-                if (main_office == -1)
-                    main_office = data.data[i].id;
                 placemarks_list[data.data[i].id] = placemarks[data.data[i].id];
             }
         }
 
-        if (main_office > -1) {
-            set_placemarks(placemarks_list);
-            on_baloon_open(main_office);
-        }
+        set_placemarks(placemarks_list);
+        $("#baloon-addr").html('');
+        $("#baloon-info-parts").html('');
+        $("#companies").val('-1').trigger('refresh');
     });
 }
 
@@ -337,7 +333,7 @@ function do_filter_repair() {
 <script src="<%= $general_url %>/js/functions.js"></script>
 %= javascript begin
     var elements = ['regions', 'companies'];
-    select_change_controller(elements, '<%= $general_url %>');
+    select_change_controller(elements, '<%= $general_url %>', undefined, function (args) { args.heads_only = 1; return args; });
 
     $("#companies").on('change', on_company_changed);
     $("#filter-types").on('change', on_filter_type_changed);

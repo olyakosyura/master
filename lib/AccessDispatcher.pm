@@ -297,7 +297,7 @@ sub send_request {
         $inst->app->log->warn("Response is undefined");
         $resp = { status => $r->code, error => 'response is unknown', description => $r->message };
     } else {
-        $inst->app->log->debug("Response: " . Dumper($resp));
+        $inst->app->log->debug("Response: " . substr(Dumper($resp), 0, 512));
     }
 
     return wantarray ? ($resp, $args{args}->{uid}) : $resp;

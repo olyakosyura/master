@@ -26,7 +26,7 @@ function request_content(base_url, skip_calc_type) {
 }
 
 var elements_info = { regions: 'region', districts: 'district', companies: 'company', buildings: 'building', objects: 'object' };
-function select_change_controller(elements, base_url, content_filter) {
+function select_change_controller(elements, base_url, content_filter, args_processor) {
     for (var el = 0; el < elements.length; ++el) {
         var $next_elem = el == elements.length - 1 ? undefined : $("#" + elements[el + 1]),
             $prev_elem = el == 0 ? undefined : $("#" + elements[el - 1]);
@@ -57,7 +57,7 @@ function select_change_controller(elements, base_url, content_filter) {
                     $.ajax({
                         method: 'get',
                         url: base_url + '/cgi-bin/' + $next_elem.attr('id'),
-                        data: choosen_object,
+                        data: args_processor ? args_processor(choosen_object) : args_processor,
                         success: function (data) {
                             var key = $next_elem.attr('id');
                             if (data[key]) {
