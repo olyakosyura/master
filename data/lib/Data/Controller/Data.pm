@@ -206,7 +206,9 @@ sub company_info {
         addr => $r->{addr},
     );
 
-    $r = select_all $self, "select status, name as addr, corpus, id, status = 'Голова' as is_primary from buildings where company_id = ?", $c_id;
+    $r = select_all $self, "select status, name as addr, corpus, id, status = 'Голова' as is_primary, bm.characteristic as type, " .
+        "bm.cost as cost, bm.heat_load as heat_load from buildings join buildings_meta bm on bm.building_id = id " .
+        "where company_id = ?", $c_id;
     return $self->render(json => { status => 500, error => 'db_error' }) unless defined $r;
 
     $to_return{buildings} = $r;

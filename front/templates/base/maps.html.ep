@@ -85,7 +85,13 @@ function change_baloon(id) {
     });
 }
 
+var last_baloon;
 function on_baloon_open(baloon_id, need_change_pos) {
+    if (last_baloon == baloon_id)
+        return;
+
+    last_baloon = baloon_id;
+
     var district_id = $("#regions :selected").attr('district_id'),
         company_id = $("#companies").val();
     $.when(
@@ -120,7 +126,11 @@ function on_baloon_open(baloon_id, need_change_pos) {
 
         var first = $("<div>"), second = $("<div>");
         for (var i = 0; i < data.count; ++i) {
-            if (data.buildings[i].is_primary == '1') {
+            var b = data.buildings[i],
+                building_info = $("<div>"),
+                info_impl = $("<p>").text("Нагрузка: " + b.heat_load + "; тип: " + b.type + "; стоимость: " + b.cost)
+                    .appendTo(building_info);
+            if (b.is_primary == '1') {
                 var container = $("<a>", {
                     href: '#',
                     click: function (id) {
@@ -128,18 +138,20 @@ function on_baloon_open(baloon_id, need_change_pos) {
                             change_baloon(id);
                             return false;
                         }
-                    }(data.buildings[i].id),
+                    }(b.id),
                 });
                 if (need_change_pos && !pos_changed) {
                     pos_changed = true;
-                    change_baloon(data.buildings[i].id);
+                    change_baloon(b.id);
                 }
-                container.text(data.buildings[i].addr).appendTo(first);
+                container.text(b.addr).appendTo(first);
                 $("<br>").appendTo(first);
+                building_info.appendTo(first);
             } else {
                 var container = $("<p>");
-                container.text(data.buildings[i].addr).appendTo($info);
+                container.text(b.addr).appendTo($info);
                 container.appendTo(second);
+                building_info.appendTo(second);
             }
         }
 
