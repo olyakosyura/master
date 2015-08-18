@@ -43,6 +43,7 @@ function set_placemarks(placemarks_list) {
         center: [latitude / count, longitude / count],
         zoom: 9,
         behaviors: ['default', 'scrollZoom'],
+        controls: ["zoomControl"],
     });
 
     clusterer = new ymaps.Clusterer({
