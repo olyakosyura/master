@@ -122,6 +122,7 @@ sub maps {
         } : {}
     } @$r ]);
     $self->stash(objects_types => [ sort keys %characteristics ]);
+    $self->stash(colors_list => [ map {{ t => $_, c => $colors{$_} }} sort keys %colors ]);
 
     return $self->render(template => 'base/maps');
 }

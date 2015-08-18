@@ -146,15 +146,47 @@ sub filter_objects {
             },
         },
         cost => {
-            req => "select distinct(building_id) as id from buildings_meta where cost > ? and cost < ?",
+            req => q/
+                SELECT building_id as id
+                FROM buildings_meta
+                JOIN buildings b ON building_id = b.id
+                WHERE b.company_id IN (
+                    SELECT company_id
+                    FROM buildings
+                    JOIN buildings_meta bm ON bm.building_id = id
+                    GROUP BY company_id
+                    HAVING SUM(bm.cost) BETWEEN ? AND ?
+                )
+            /,
             args => $bounds,
         },
         repair => {
-            req => "select distinct(building_id) as id from buildings_meta where reconstruction_date > ? and reconstruction_date < ?",
-            args => $bounds,
+            req => q/
+                SELECT building_id as id
+                FROM buildings_meta bm
+                JOIN buildings b ON b.id = building_id
+                WHERE b.company_id in (
+                    SELECT company_id
+                    FROM buildings
+                    JOIN buildings_meta bm ON bm.building_id = id
+                    WHERE reconstruction_date IS NOT NULL AND reconstruction_date BETWEEN ? AND ? OR build_date BETWEEN ? AND ?
+                    GROUP BY company_id
+                )
+            /,
+            args => sub { $bounds->(), $bounds->() },
         },
         type => {
-            req => "select distinct(building_id) as id from buildings_meta where characteristic in (%s)",
+            req => q/
+                SELECT building_id as id
+                FROM buildings_meta bm
+                JOIN buildings b on b.id = building_id
+                WHERE b.company_id IN (
+                    SELECT company_id
+                    FROM buildings
+                    JOIN buildings_meta bm ON bm.building_id = id
+                    WHERE bm.characteristic IN (%s) GROUP BY company_id
+                );
+            /,
             post => sub {
                 join ',', map { '?' } (1 .. (scalar $types_param->()))
             },

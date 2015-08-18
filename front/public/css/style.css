@@ -1801,18 +1801,7 @@ footer a:hover img{
 	top: 6px;
 	margin-right: 5px;
 }
-.tab-content  .green{
-	background-color: #00aeef;
-}
-.tab-content  .blue{
-	background-color:  #00a651;
-}
-.tab-content  .red{
-	background-color: #9933cc;
-}
-.tab-content  .pink{
-	background-color: #f948b1;
-}
+
 .tab-content .box ul li label{
 	margin-right: 40px;
 	font-size: 1.2em;
