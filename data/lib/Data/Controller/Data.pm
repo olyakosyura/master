@@ -207,8 +207,9 @@ sub company_info {
     );
 
     $r = select_all $self, "select status, name as addr, corpus, id, status = 'Голова' as is_primary, bm.characteristic as type, " .
-        "bm.cost as cost, bm.heat_load as heat_load from buildings join buildings_meta bm on bm.building_id = id " .
-        "where company_id = ?", $c_id;
+        "bm.reconstruction_date as reconstruction_date, bm.build_date as build_date, " .
+        "cast(bm.cost as signed) as cost, bm.heat_load as heat_load from buildings join buildings_meta bm on bm.building_id = id " .
+        "where company_id = ? order by addr", $c_id;
     return $self->render(json => { status => 500, error => 'db_error' }) unless defined $r;
 
     $to_return{buildings} = $r;

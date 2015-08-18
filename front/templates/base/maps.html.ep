@@ -128,11 +128,16 @@ function on_baloon_open(baloon_id, need_change_pos) {
         var first = $("<div>"), second = $("<div>");
         for (var i = 0; i < data.count; ++i) {
             var b = data.buildings[i],
-                //building_info = $("<div>"),
-                info_impl = $("<span>",{class: 'address-meta',}).text(" (Тип: " + b.type + "; Нагрузка: " + b.heat_load + "; Cтоимость: " + b.cost + ")"),
-                //    .appendTo(building_info);
-				building_info = info_impl;
-				$("<br>").appendTo(building_info);
+                info_impl = $("<span>",{
+                    class: 'address-meta',
+                }).text(" (Тип: " + b.type +
+                        "; Нагрузка: " + b.heat_load +
+                        "; Cтоимость: " + b.cost +
+                        (b.build_date ? "; Дата ввода в экспл: " + b.build_date : "") +
+                        (b.reconstruction_date ? "; Дата кап. ремонта: " + b.reconstruction_date : "") +
+                        ")"),
+                building_info = info_impl;
+            $("<br>").appendTo(building_info);
             if (b.is_primary == '1') {
                 var container = $("<a>", {
                     href: '#',
@@ -148,7 +153,6 @@ function on_baloon_open(baloon_id, need_change_pos) {
                     change_baloon(b.id);
                 }
                 container.text(b.addr).appendTo(first);
-                //$("<br>").appendTo(first);
                 building_info.appendTo(first);
             } else {
                 var container = $("<span>");
