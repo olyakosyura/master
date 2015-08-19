@@ -10,8 +10,6 @@
       });
     });
   </script>
-
-		<div class="ic">More Website Templates @ TemplateMonster.com - April 15, 2013!</div>
 		<div id="slider">
 			<div class="container_12">
 				<div class="grid_12">
@@ -43,17 +41,7 @@
 		</div>
 		<div class="inner">
 			<div class="container_12">
-				<div class="wrapper">
-					<div class="grid_12">
-						<div class="block">
-							<div class="info-block">
-								<a href="http://bayguzin.ru/assets/files/2014/08/biznes.zip" rel="nofollow" class="link">Click here</a> for more info about this free website template created by Template 
-	Monster. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor.
-							</div>
-							<a href="http://bayguzin.ru/assets/files/2014/08/biznes.zip" class="button" rel="nofollow">Click here!</a>
-						</div>
-					</div>
-				</div>
+				
 				<div class="wrapper">
 					<div class="block">
 						<div class="grid_8">
@@ -72,17 +60,6 @@
 								<em>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam, quis nostrud.</em><p><strong>— Patrick Pool, Romonson</strong></p>
 							</div>
 						</div>
-					</div>
-				</div>
-				<div class="wrapper">
-					<div class="grid_12">
-						<h2 class="h-pad">Our Clients</h2>
-						<ul class="clients-list">
-							<li><a href="#"><img src="<%= $general_url %>/images/client1.png" alt=""></a></li>
-							<li><a href="#"><img src="<%= $general_url %>/images/client2.png" alt=""></a></li>
-							<li><a href="#"><img src="<%= $general_url %>/images/client3.png" alt=""></a></li>
-							<li><a href="#"><img src="<%= $general_url %>/images/client4.png" alt=""></a></li>
-						</ul>
 					</div>
 				</div>
 			</div>			
