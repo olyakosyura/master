@@ -34,9 +34,6 @@ sub startup {
         );
         return $self->render(status => 500) unless $res;
 
-        use Data::Dumper;
-        $self->app->log->debug(Dumper $res);
-
         my %data = (
             login => '',
             name => '',
@@ -47,7 +44,7 @@ sub startup {
         );
 
         if ($res->{error}) {
-            _session($self, {expires => 1});
+            _session($self, { expires => 1 });
             $self->stash(logged_in => 0);
         } else {
             %data = (%data, %$res);
@@ -66,29 +63,21 @@ sub startup {
         my $url = $r->url;
         $url =~ s#^(/[^?]*)#$1#;
 
-=cut
-        if (defined $res->{status}) {
-            return $self->render(template => 'base/login') && undef if $res->{status} == 401;
-            return $self->render(status => $res->{status}) && undef;
-        }
-
         unless ($self->stash('logged_in')) {
-            return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
+            return $self->redirect_to(GENERAL_URL . '/login');
         }
 
         if (!role_less_then $self->stash('role'), $access_rules{$url} || 'admin') {
-            $self->app->log->warn("Access to $url ($access_rules{$url} is needed) denied for $res->{login} ($res->{role})");
             $self->render(status => 404);
             return undef;
         }
-=cut
 
         return 1;
     });
 
     $any->get('/')->to("builder#index");
-    $any->get('/orders')->to("builder#orders");
     $any->get('/login')->to("builder#login");
+    $auth->get('/orders')->to("builder#orders");
     $auth->get('/track')->to("builder#track");
 
     $any->any('/*any' => { any => '' } => sub {

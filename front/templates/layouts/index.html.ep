@@ -22,6 +22,7 @@
     <![endif]-->
 </head>
 
+% if ($logged_in) {
 %= javascript begin
     function logout() {
         var f = function () {
@@ -35,6 +36,7 @@
         });
     }
 % end
+% }
 
 <body>
 	<header>
@@ -45,14 +47,16 @@
 					<nav>
 						<ul class="menu">
                             <li <%= stash('url') eq '/' ? 'class=active' : '' %>><a href="<%= $general_url %>/">about</a></li>
+
+% if ($logged_in) {
 							<li <%= stash('url') eq '/orders' ? 'class=active' : '' %>><a href="<%= $general_url %>/orders">orders</a></li>
 							<li <%= stash('url') eq '/track' ? 'class=active' : '' %>><a href="<%= $general_url %>/track">track</a></li>
-
-                            <li <%= stash('url') eq '/login' ? 'class=active' : '' %>>
-% if ($logged_in) {
+                            <li>
                                 <a><%= ucfirst($lastname || '') . ' ' . ucfirst($name || '') %></a>
                                 <a href="#" onclick="logout(); return false;">sign out</a>
+                            </li>
 % } else {
+                            <li <%= stash('url') eq '/login' ? 'class=active' : '' %>>
                                 <a href="<%= $general_url %>/login">sign in</a>
                             </li>
                             <li <%= stash('url') eq '/register' ? 'class=active' : '' %>>
