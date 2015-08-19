@@ -1,1 +1,3 @@
-% layout 'enter'
+% layout 'index';
+
+<div>HELLO</div>

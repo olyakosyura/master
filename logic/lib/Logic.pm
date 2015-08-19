@@ -50,7 +50,7 @@ sub startup {
             });
 
         return _i_err $self unless $r;
-        return $self->render(status => 401, json => { error => "internal", description => $r->{error} }) if !$r or $r->{error};
+        return $self->render(status => 401, json => { error => "unauthorized", description => $r->{error} }) if !$r or $r->{error};
 
         _session($self, $r->{session_id});
         return $self->render(json => { ok => 1 });
@@ -92,48 +92,6 @@ sub startup {
         return $self->render(json => { ok => 1 }) if $r && not $r->{error};
         return $self->_i_err unless $r;
         return $self->render(status => 400, json => { error => "invalid", description => $r->{error} });
-    });
-
-    $auth->post('/xls/:method' => sub {
-        my $self = shift;
-        my $fh = File::Temp->new(UNLINK => 0);
-
-        my $upload = $self->req->upload('file');
-
-        my %expected_headers = map { $_ => 1 } qw (
-            vnd.ms-excel
-            msexcel
-            x-msexcel
-            x-ms-excel
-            x-excel
-            x-dos_ms_excel
-            xls
-            x-xls
-            vnd.openxmlformats-officedocument.spreadsheetml.sheet
-            octet-stream
-        );
-
-        if ($upload->headers->content_type !~ m#application/(\S+)#i || not defined $expected_headers{lc $1}) {
-            $self->app->log->warn("Unexpected content type given: " . $upload->headers->content_type);
-            return $self->render(status => 400, json => { error => 'bad request', description => 'unexpected content type' });
-        }
-
-        $self->req->upload('file')->move_to($fh->filename);
-
-        my $response = send_request($self,
-            method => $self->req->method,
-            url => $self->stash('method'),
-            port => DATA_PORT,
-            args => { filename => $fh->filename },
-        );
-        return $self->render(status => 500, json => { error => 'internal' }) unless $response;
-
-        my $status = $response->{status} || 200;
-        delete $response->{status};
-        if ($status != 200) {
-            unlink $fh->filename;
-        }
-        return $self->render(status => $status, json => $response);
     });
 
     $auth->any('/*any' => { any => '' } => sub {

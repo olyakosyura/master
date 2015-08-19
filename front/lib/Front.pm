@@ -24,13 +24,15 @@ sub startup {
     $self->plugin('PODRenderer');
     $self->secrets([qw( 0i+hE8eWI0pG4DOH55Kt2TSV/CJnXD+gF90wy6O0U0k= )]);
 
-    $self->routes->get('/login')->to(cb => sub {
+    my $any = $self->routes->under('/' => sub {
         my $self = shift;
-        $self->stash(general_url => GENERAL_URL);
-        $self->render(template => 'base/login');
+        my $url = $self->req->url;
+        $url =~ s#^(/[^?]*)#$1#;
+        $self->stash(url => $url);
+        $self->app->log->info($url);
     });
 
-    my $auth = $self->routes->under('/' => sub {
+    my $auth = $any->under('/' => sub {
         my $self = shift;
         my $r = $self->req;
 
@@ -55,7 +57,7 @@ sub startup {
 
         return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
 
-        $self->stash(general_url => GENERAL_URL, url => $url);
+        $self->stash(general_url => GENERAL_URL);
         $self->stash(files_url => FILES_HOST);
         $self->stash(%$res); # login name lastname role uid email objects_count
 
@@ -68,20 +70,19 @@ sub startup {
         return 1;
     });
 
-    $auth->get('/')->to("builder#index");
-    $auth->get('/objects')->to("builder#objects");
-    $auth->get('/users')->to("builder#users");
-    $auth->get('/upload')->to(cb => sub { shift->render(template => 'base/upload'); });
-    $auth->get('/report_v2')->to("builder#report_v2");
-    $auth->get('/maps')->to("builder#maps");
-    $auth->get('/geolocation')->to("builder#start_geolocation");
-
-    $auth->any('/*any' => { any => '' } => sub {
+    $any->get('/')->to("builder#index");
+    $any->get('/orders')->to("builder#orders");
+    $any->get('/login')->to("builder#login");
+    $auth->get('/track')->to("builder#track");
+=cut
+    $any->any('/*any' => { any => '' } => sub {
         my $self = shift;
         if ($self->param('any') ne 'login') {
             $self->render(template => 'base/not_found');
         }
+        $self->app->log->info("TES2T");
     });
+=cut
 }
 
 1;
