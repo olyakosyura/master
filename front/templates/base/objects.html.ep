@@ -57,7 +57,7 @@
       </div>
       <!-- / -->
       <p class="row-button">
-          <a href="#" onclick="request_content('<%= $general_url %>', true); return false;">Сформировать</a>
+          <a href="#" onclick="request_content('', true); return false;">Сформировать</a>
       </p>
     </form>
 </div>
@@ -76,11 +76,11 @@
     </div>
 </div>
 
-<script src="<%= $general_url %>/js/functions.js"></script>
+<script src="/js/functions.js"></script>
 %= javascript begin
     var elements = ['districts', 'companies', 'buildings'];
     $(function() { $("#regions").on('change', function() { on_districtChange(this, elements, districts); }); });
-    select_change_controller(elements, '<%= $general_url %>');
+    select_change_controller(elements, '');
 % end
 
 

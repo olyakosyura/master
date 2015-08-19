@@ -5,7 +5,7 @@
         var fd = new FormData(document.getElementById(url));
 
         $.ajax({
-          url: "<%= $general_url %>/cgi-bin/xls/" + url,
+          url: "/cgi-bin/xls/" + url,
           type: "POST",
           data: fd,
           enctype: 'multipart/form-data',

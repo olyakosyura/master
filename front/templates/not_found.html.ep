@@ -1,0 +1,8 @@
+% layout 'index';
+
+<div class="server-not-found">
+    <h6>Запрашиваемая страница не найдена на сервере</h6>
+    <b>404</b>
+</div>
+
+

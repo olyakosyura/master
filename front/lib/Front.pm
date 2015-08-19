@@ -6,14 +6,7 @@ use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
     '/'          => 'user',
-    '/report_v2' => 'user',
     '/login'     => 'user',
-    '/upload'    => 'admin',
-    '/objects'   => 'manager',
-    '/users'     => 'admin',
-    '/maps'      => 'user',
-    '/geolocation'          => 'admin',
-    '/404.html'  => 'user',
 );
 
 # This method will run once at server start
@@ -28,8 +21,8 @@ sub startup {
         my $self = shift;
         my $url = $self->req->url;
         $url =~ s#^(/[^?]*)#$1#;
-        $self->stash(url => $url);
-        $self->app->log->info($url);
+        $self->stash(general_url => GENERAL_URL, url => $url);
+        return 1;
     });
 
     my $auth = $any->under('/' => sub {
@@ -57,8 +50,6 @@ sub startup {
 
         return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
 
-        $self->stash(general_url => GENERAL_URL);
-        $self->stash(files_url => FILES_HOST);
         $self->stash(%$res); # login name lastname role uid email objects_count
 
         if (!role_less_then $res->{role}, $access_rules{$url} || 'admin') {
@@ -74,7 +65,7 @@ sub startup {
     $any->get('/orders')->to("builder#orders");
     $any->get('/login')->to("builder#login");
     $auth->get('/track')->to("builder#track");
-=cut
+
     $any->any('/*any' => { any => '' } => sub {
         my $self = shift;
         if ($self->param('any') ne 'login') {
@@ -82,7 +73,6 @@ sub startup {
         }
         $self->app->log->info("TES2T");
     });
-=cut
 }
 
 1;

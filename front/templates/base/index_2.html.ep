@@ -5,7 +5,7 @@
     <h3>Форма запроса отчета</h3>
     <!-- sub-menu -->
     <ul class="sub-menu-main">
-        <li><a href="<%= $general_url %>">Запрос по адресу</a></li>
+        <li><a href="">Запрос по адресу</a></li>
         <li class="active"><a href="#" onclick="return false;">Запрос по организации</a></li>
     </ul>
     <!-- /sub-menu -->
@@ -43,7 +43,7 @@
       </div>
       <!-- / -->
       <p class="row-button">
-          <a href="#" onclick="request_content('<%= $general_url %>'); return false;">Сформировать</a>
+          <a href="#" onclick="request_content(''); return false;">Сформировать</a>
       </p>
     </form>
 </div>
@@ -64,7 +64,7 @@
        </div>
 <!-- /about-service -->
 
-<script src="<%= $general_url %>/js/functions.js"></script>
+<script src="/js/functions.js"></script>
 %= javascript begin
     function content_filter(sender, content) {
         if (sender != 'region')
@@ -81,6 +81,6 @@
     }
 
     var elements = ['regions', 'companies'];
-    select_change_controller(elements, '<%= $general_url %>', content_filter);
+    select_change_controller(elements, '', content_filter);
 % end
 
