@@ -43,7 +43,7 @@
 		<div class="container_12">
 			<div class="grid_12">
 				<div class="wrapper">
-                    <a href="<%= $general_url %>" class="logo">design.maniacs</a>
+                    <a href="<%= $general_url %>" class="logo">J.W Couriers</a>
 					<nav>
 						<ul class="menu">
                             <li <%= stash('url') eq '/' ? 'class=active' : '' %>><a href="<%= $general_url %>/">about</a></li>
@@ -76,12 +76,10 @@
 		<div class="container_12">
 			<div class="wrapper">
 				<div class="grid_8">
-					Design Maniacs &copy; 2013 &nbsp;  | &nbsp;  Website Template designed by <a href="http://www.bayguzin.ru" class="link">bayguzin.ru</a>
+					Designed by Olga Kosyura & Pavel Berezhnoy 2015
 				</div>
 				<div class="grid_4">
-					<div class="social">
-						My Social:<a href="#"><img src="<%= $general_url %>/images/facebook-icon.png" alt=""></a><a href="#"><img src="images/twitter-icon.png" alt=""></a>
-					</div>
+					
 				</div>
 			</div>
 		</div>

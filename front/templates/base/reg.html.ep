@@ -63,7 +63,7 @@
                     }
 % end
                 <div class="row-button">
-                    <a href="#" onclick="login(); return false;">LOGIN</a>
+                    <a href="#" onclick="login(); return false;">Register</a>
                 </div>
             </form>
      </article>
