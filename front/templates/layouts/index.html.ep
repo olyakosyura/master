@@ -27,13 +27,13 @@
 		<div class="container_12">
 			<div class="grid_12">
 				<div class="wrapper">
-					<a href="about.html" class="logo">design.maniacs</a>
+                    <a href="<%= $general_url %>" class="logo">design.maniacs</a>
 					<nav>
 						<ul class="menu">
-							<li <%= stash('url') eq '/' ? 'class=active' : '' %>><a href="/">about</a></li>
-							<li <%= stash('url') eq '/orders' ? 'class=active' : '' %>><a href="orders">orders</a></li>
-							<li <%= stash('url') eq '/track' ? 'class=active' : '' %>><a href="track">track</a></li>
-							<li <%= stash('url') eq '/login' ? 'class=active' : '' %>><a href="login">login</a></li>
+                            <li <%= stash('url') eq '/' ? 'class=active' : '' %>><a href="<%= $general_url %>/">about</a></li>
+							<li <%= stash('url') eq '/orders' ? 'class=active' : '' %>><a href="<%= $general_url %>/orders">orders</a></li>
+							<li <%= stash('url') eq '/track' ? 'class=active' : '' %>><a href="<%= $general_url %>/track">track</a></li>
+							<li <%= stash('url') eq '/login' ? 'class=active' : '' %>><a href="<%= $general_url %>/login">login</a></li>
 						</ul>
 					</nav>
 				</div>
