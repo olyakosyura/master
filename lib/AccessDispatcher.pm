@@ -157,7 +157,7 @@ sub _session {
 
     if (not defined $val) {
         return $self->signed_cookie('session');
-    } elsif (ref $val eq 'HASH' && $val->{expired}) {
+    } elsif (ref $val eq 'HASH' && $val->{expires}) {
         $self->signed_cookie(session => '', { expires => 1 });
     } else {
         $self->signed_cookie(session => $val, { expires => time + EXP_TIME, domain => '.dev.web-vesna.ru', path => '/' });

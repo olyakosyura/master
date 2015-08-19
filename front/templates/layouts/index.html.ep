@@ -22,6 +22,20 @@
     <![endif]-->
 </head>
 
+%= javascript begin
+    function logout() {
+        var f = function () {
+            window.location.href = '<%= $general_url %>/';
+        };
+        $.ajax({
+            method: 'get',
+            url: '<%= $general_url %>/cgi-bin/logout',
+            success: f,
+            error: f,
+        });
+    }
+% end
+
 <body>
 	<header>
 		<div class="container_12">
@@ -33,7 +47,18 @@
                             <li <%= stash('url') eq '/' ? 'class=active' : '' %>><a href="<%= $general_url %>/">about</a></li>
 							<li <%= stash('url') eq '/orders' ? 'class=active' : '' %>><a href="<%= $general_url %>/orders">orders</a></li>
 							<li <%= stash('url') eq '/track' ? 'class=active' : '' %>><a href="<%= $general_url %>/track">track</a></li>
-							<li <%= stash('url') eq '/login' ? 'class=active' : '' %>><a href="<%= $general_url %>/login">login</a></li>
+
+                            <li <%= stash('url') eq '/login' ? 'class=active' : '' %>>
+% if ($logged_in) {
+                                <a><%= ucfirst($lastname || '') . ' ' . ucfirst($name || '') %></a>
+                                <a href="#" onclick="logout(); return false;">sign out</a>
+% } else {
+                                <a href="<%= $general_url %>/login">sign in</a>
+                            </li>
+                            <li <%= stash('url') eq '/register' ? 'class=active' : '' %>>
+                                <a href="<%= $general_url %>/register">sign up</a>
+% }
+                            </li>
 						</ul>
 					</nav>
 				</div>

@@ -1,7 +1,7 @@
 package Front;
 use Mojo::Base 'Mojolicious';
 
-use AccessDispatcher qw( send_request role_less_then );
+use AccessDispatcher qw( send_request role_less_then _session);
 use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
@@ -22,12 +22,6 @@ sub startup {
         my $url = $self->req->url;
         $url =~ s#^(/[^?]*)#$1#;
         $self->stash(general_url => GENERAL_URL, url => $url);
-        return 1;
-    });
-
-    my $auth = $any->under('/' => sub {
-        my $self = shift;
-        my $r = $self->req;
 
         my $res = send_request($self,
             method => 'get',
@@ -40,23 +34,54 @@ sub startup {
         );
         return $self->render(status => 500) unless $res;
 
+        use Data::Dumper;
+        $self->app->log->debug(Dumper $res);
+
+        my %data = (
+            login => '',
+            name => '',
+            lastname => '',
+            role => '',
+            uid => '',
+            email => '',
+        );
+
+        if ($res->{error}) {
+            _session($self, {expires => 1});
+            $self->stash(logged_in => 0);
+        } else {
+            %data = (%data, %$res);
+            $self->stash(logged_in => 1);
+        }
+
+        $self->stash(%data);
+
+        return 1;
+    });
+
+    my $auth = $any->under('/' => sub {
+        my $self = shift;
+        my $r = $self->req;
+
         my $url = $r->url;
         $url =~ s#^(/[^?]*)#$1#;
 
+=cut
         if (defined $res->{status}) {
             return $self->render(template => 'base/login') && undef if $res->{status} == 401;
             return $self->render(status => $res->{status}) && undef;
         }
 
-        return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
+        unless ($self->stash('logged_in')) {
+            return $self->redirect_to(GENERAL_URL . '/login') && undef if $res->{error};
+        }
 
-        $self->stash(%$res); # login name lastname role uid email objects_count
-
-        if (!role_less_then $res->{role}, $access_rules{$url} || 'admin') {
+        if (!role_less_then $self->stash('role'), $access_rules{$url} || 'admin') {
             $self->app->log->warn("Access to $url ($access_rules{$url} is needed) denied for $res->{login} ($res->{role})");
-            $self->render(template => 'base/not_found');
+            $self->render(status => 404);
             return undef;
         }
+=cut
 
         return 1;
     });
@@ -69,7 +94,7 @@ sub startup {
     $any->any('/*any' => { any => '' } => sub {
         my $self = shift;
         if ($self->param('any') ne 'login') {
-            $self->render(template => 'base/not_found');
+            $self->render(status => 404);
         }
         $self->app->log->info("TES2T");
     });
