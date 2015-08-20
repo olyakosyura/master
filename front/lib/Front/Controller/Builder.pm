@@ -33,6 +33,14 @@ sub register {
         return $self->redirect_to(GENERAL_URL);
     }
 
+    my $res = send_request($self,
+        method => 'get',
+        url => 'users_list',
+        port => DATA_PORT,
+    );
+    return $self->render(status => 500) unless $res;
+
+    $self->stash(users => $res->{users});
     return $self->render(template => 'base/reg');
 }
 
