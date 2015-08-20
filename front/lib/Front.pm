@@ -9,6 +9,7 @@ my %access_rules = (
     '/cargo'     => 'manager',
     '/orders'    => 'user',
     '/manage'    => 'manager',
+    '/users'     => 'admin',
 );
 
 # This method will run once at server start
@@ -84,6 +85,7 @@ sub startup {
     $auth->get('/track')->to("builder#track");
     $auth->get('/cargo')->to("builder#cargo");
     $auth->get('/manage')->to("builder#manage_orders");
+    $auth->get('/users')->to("builder#users_list");
 
     $any->any('/*any' => { any => '' } => sub {
         my $self = shift;

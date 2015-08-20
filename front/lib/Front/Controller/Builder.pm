@@ -26,12 +26,8 @@ sub signin_ok {
     return defined($res) && !(defined $res->{error});
 }
 
-sub register {
+sub users_list {
     my $self = shift;
-
-    if ($self->signin_ok) {
-        return $self->redirect_to(GENERAL_URL);
-    }
 
     my $res = send_request($self,
         method => 'get',
@@ -41,6 +37,16 @@ sub register {
     return $self->render(status => 500) unless $res;
 
     $self->stash(users => $res->{users});
+    $self->render(template => 'base/users_list');
+}
+
+sub register {
+    my $self = shift;
+
+    if ($self->signin_ok) {
+        return $self->redirect_to(GENERAL_URL);
+    }
+
     return $self->render(template => 'base/reg');
 }
 
