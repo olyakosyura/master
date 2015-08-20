@@ -1,8 +1,7 @@
 % layout 'index';
 
   <section class="intro-sign-in">
-     <article>
-            <h6>Registration</h6>
+            <h3>List of users</h3>
             <form id="frm-login" onkeypress="usl(event)">
         	<!-- table-1 -->
 			<div class="table-1" style="margin-top: 2em;">
@@ -32,62 +31,8 @@
             </form>
         </div>
        <!-- /table-1 -->
-%= javascript begin
-                    function usl(e) { if(e.keyCode == 13) login(); }
-                    function login() {
-                        var $frm = $("#frm-login"),
-                            $err = $("#frm-error"),
-                            login = $frm.find("[name=intro-login]").val(),
-                            pass = $frm.find("[name=intro-password]").val();
-
-                        if (login == "") { // TODO: Trim spaces
-							$("#modal-enter").reveal();
-                            return;
-                        }
-                        if (pass == "") {
-							$("#modal-enter").reveal();
-                            return;
-                        }
-
-                        $.ajax({
-                                method: 'get',
-                                url: "<%= $general_url %>/cgi-bin/login",
-                                data: {
-                                    login: login,
-                                    password: pass,
-                                },
-                                success: function (data) {
-                                    window.location.href = "<%= $general_url %>/";
-                                },
-                                error: function (data) {
-                                    if (data && data.description) {
-										$("#modal-enter").reveal();
-                                    } else {
-										$("#modal-enter").reveal();
-                                    }
-                                },
-                            });
-                        return;
-                    }
-% end
-                <div class="row-button">
-                    <a href="#" onclick="login(); return false;">Register</a>
-                </div>
             </form>
-     </article>
      <!--=============/box-themes=============-->
   </section>
   <!--===============================/content==============================-->
-
-<!--========== modal-enter ==========-->
-<div id="modal-enter" class="reveal-modal modal-enter">
- <div class="modal-center">
-    <h6>Login or password incorrect</h6>
-    <p>Check login and password please <br />and retry</p>
-    <div>
-      <a class="close-reveal-modal"  href="#">OK</a>
-    </div>
- </div>
-</div>
-<!--========== /modal-enter ==========-->
 

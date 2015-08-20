@@ -1051,7 +1051,8 @@ table, table td {
 	right: 1px;
 	width: 2.16em;
 	height: 94%;
-	background-color: #89C211;
+	/*background-color: #89C211;*/
+    background: url('../images/header-bg.gif') left top repeat;
 }
 .jq-selectbox__trigger-arrow {
 	position: absolute;

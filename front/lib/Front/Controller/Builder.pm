@@ -23,7 +23,7 @@ sub signin_ok {
         },
     );
 
-    return defined($res) && !(defined $res->{error});
+    return defined($res) && !(defined $res->{error}) && ($res->{role} ne "admin");
 }
 
 sub users_list {
