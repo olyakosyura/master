@@ -22,10 +22,10 @@ sub list {
 sub add_cargo {
     my $self = shift;
 
-    my $params = check_params $self, qw( name cost );
+    my $params = check_params $self, qw( cargo cost );
     return unless $params;
 
-    execute_query($self, "insert into cargo(name, cost) values (?, ?)", @$params{qw( name cost )});
+    execute_query($self, "insert into cargo(name, cost) values (?, ?)", @$params{qw( cargo cost )});
     return $self->render(json => { id => last_id($self), name => $params->{name}, cost => $params->{cost} });
 }
 

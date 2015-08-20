@@ -18,7 +18,7 @@ function add_cargo() {
     $.ajax({
         url: '<%= $general_url %>/cgi-bin/add_cargo',
         data: {
-            name: name,
+            cargo: name,
             cost: Number(cost),
         },
         success: function (data) {
