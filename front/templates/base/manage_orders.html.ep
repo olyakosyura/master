@@ -62,7 +62,7 @@ function do_close(id, sel) {
 </div>
 <div class="table-1" style="margin-top: 2em;">
     <form>
-        <table id="orders">
+        <table id="orders" class='with-buttons'>
             <thead>
                 <tr>
                     <th>User</th>

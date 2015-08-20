@@ -64,10 +64,41 @@ function make_order() {
 % end
 
 <section class="content">
-<div class="table-1" style="margin-top: 2em;">
-    <h3>Orders list</h3>
+<div class="report-request-form">
+    <h3>Add new order</h3>
+    <div class="row-input" id='add-order'>
+        <div class="col-right">
+            <label for="intro-departure">Departure point</label>
+            <input name="intro-departure" id="intro-departure" type="text">
+        </div>
+        <div class="col-right">
+            <label for="intro-destination">Destination point</label>
+            <input name="intro-destination" id="intro-destination" type="text">
+        </div>
+        <div class="col-right">
+            <label for="intro-count">Quantity</label>
+            <input name="intro-departure" id="intro-count" type="text">
+        </div>
+      <label for="cargo">Choose cargo</label>
+      <div>
+        <select name="cargo" id="cargo">
+          <option value="-1">Choose cargo</option>
+% for my $c (@$cargo) {
+          <option value="<%= $c->{id} %>" cost="<%= $c->{cost} %>"><%= $c->{name} %></option>
+% }
+        </select>
+      </div>
+    </div>
+
+    <div class="row-button">
+        <a href="#" onclick="make_order(); return false;">Submit Order</a>
+    </div>
+</div>
+
+<div class="table-1" style="margin-top: 5em;">
+    <h3>Existed orders</h3>
     <form>
-        <table id="orders" class='with-buttons'>
+        <table id="orders">
             <thead>
                 <tr>
                     <th>Order id</th>
@@ -102,36 +133,6 @@ function make_order() {
             </tbody>
         </table>
     </form>
-</div>
-<div class="report-request-form">
-    <h3>Add new order</h3>
-    <div class="row-input" id='add-order'>
-        <div class="col-right">
-            <label for="intro-departure">Departure point</label>
-            <input name="intro-departure" id="intro-departure" type="text">
-        </div>
-        <div class="col-right">
-            <label for="intro-destination">Destination point</label>
-            <input name="intro-destination" id="intro-destination" type="text">
-        </div>
-        <div class="col-right">
-            <label for="intro-count">Quantity</label>
-            <input name="intro-departure" id="intro-count" type="text">
-        </div>
-      <label for="cargo">Choose cargo</label>
-      <div>
-        <select name="cargo" id="cargo">
-          <option value="-1">Choose cargo</option>
-% for my $c (@$cargo) {
-          <option value="<%= $c->{id} %>" cost="<%= $c->{cost} %>"><%= $c->{name} %></option>
-% }
-        </select>
-      </div>
-    </div>
-
-    <div class="row-button">
-        <a href="#" onclick="make_order(); return false;">Submit Order</a>
-    </div>
 </div>
 </section>
 
