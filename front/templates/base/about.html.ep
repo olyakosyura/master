@@ -14,9 +14,27 @@
 			<div class="container_12">
 				<div class="grid_12">
 				<div class="camera_wrap camera_azure_skin" id="camera_wrap_1">
-		      <div data-src="<%= $general_url %>/images/slide1.jpg">		      </div>
-		      <div data-src="<%= $general_url %>/images/slide2.jpg">		      </div>
-		      <div data-src="<%= $general_url %>/images/slide3.jpg">		      </div>
+		      <div data-src="<%= $general_url %>/images/slide1.jpg">	
+		      	  <div class="camera_caption fadeIn">
+		              <h2> Medical supplies </h2>
+		              	We provide a next-day or often a same-day dedicated courier service to the UK and Wales Healthcare sector including secure collection and delivery of pathological specimens, EBME, sterile equipment for CSSDs, internal mail, and confidential medical records.
+		              	
+		              
+		          </div>
+		      </div>
+		      <div data-src="<%= $general_url %>/images/slide2.jpg">
+			  <div class="camera_caption fadeIn">
+		              <h2>Legal documents</h2>
+		              	Confidentiality First. Deeds, wills, contracts or writs – whatever your crucial document, we know the rules and guarantee complete confidentiality and the best possible care.We’ll even wait while your papers are processed and bring them right back to you or your client.
+		              	
+		          </div>
+		      </div>
+		      <div data-src="<%= $general_url %>/images/slide3.jpg">
+		          <div class="camera_caption fadeIn">
+		              <h2>Hazardous loads</h2>
+		              	We carry a wide range of dangerous goods for our customers across the most extensive network in Wales and the UK. Supported by our team of certified Dangerous Goods Specialists, we have an exemplary safety and compliance record in Wales and the UK.
+		          </div>
+		      </div>
 		     </div>
 		    </div>
 	  	</div>
