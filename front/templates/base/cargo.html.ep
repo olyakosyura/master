@@ -44,6 +44,7 @@ function add_cargo() {
 % end
 
 <section class="content">
+<h3>Cargo</h3>
 <div class="table-1" style="margin-top: 2em;">
     <form>
         <table id="cargo-table">

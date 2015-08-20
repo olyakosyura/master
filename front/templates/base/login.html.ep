@@ -1,8 +1,8 @@
 % layout 'index';
 
-  <section class="intro-sign-in">
+  <section class="intro-sign-in low">
+            <h3>Authorization</h3>
      <article>
-            <h6>Authorization</h6>
             <form id="frm-login" onkeypress="usl(event)">
                 <div class="row-input">
                     <div class="col-left">

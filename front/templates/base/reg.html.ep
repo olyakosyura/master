@@ -1,36 +1,36 @@
 % layout 'index';
 
   <section class="intro-sign-in">
+    <h3>Registration</h3>
      <article>
-            <h6>Registration</h6>
             <form id="frm-login" onkeypress="usl(event)">
                 <div class="row-input">
                    
-		    <div class="col-left">
-                        <label for="intro-login" id="intro-login">Name</label>
-                        <input name="intro-login" type="text">
+                    <div class="col-left wide">
+                        <label for="intro-name">Name</label>
+                        <input name="intro-name" id="intro-name" type="text">
                     </div>
-                    <div class="col-right">
-                        <label for="intro-password" id="intro-password">Surname</label>
-                        <input name="intro-password" type="password">
+                    <div class="col-right wide">
+                        <label for="intro-surname">Surname</label>
+                        <input name="intro-surname" id="intro-surname" type="text">
                     </div>
                     <br>
-                    <div class="col-left">
-                        <label for="intro-login" id="intro-login">Login</label>
-                        <input name="intro-login" type="text">
+                    <div class="col-left wide">
+                        <label for="intro-login">Login</label>
+                        <input name="intro-login" id="intro-login" type="text">
                     </div>
-                    <div class="col-right">
-                        <label for="intro-password" id="intro-password">Password</label>
-                        <input name="intro-password" type="password">
+                    <div class="col-right wide">
+                        <label for="intro-email">Email</label>
+                        <input name="intro-email" id="intro-email" type="text">
                     </div>
-		    <br>
-		    <div class="col-left">
-                        <label for="intro-login" id="intro-login">Email</label>
-                        <input name="intro-login" type="text">
+                    <div class="col-left wide">
+                        <label for="intro-password">Password</label>
+                        <input name="intro-password" id="intro-password" type="password">
                     </div>
-                    <div class="col-right">
-                        <label for="intro-password" id="intro-password">Role</label>
-                        <input name="intro-password" type="password">
+                    <br>
+                    <div class="col-right wide">
+                        <label for="intro-password-confirm">Confirm password</label>
+                        <input name="intro-password-confirm" id="intro-password-confirm" type="password">
                     </div>
        	            
                 </div>

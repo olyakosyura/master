@@ -375,7 +375,7 @@ input, textarea{
 /*================== /edit-data ==================*/
 
 /*================== report-request-form ==================*/
-.report-request-form{padding:3.9em 0 0em;}
+/*.report-request-form{padding:3.9em 0 0em;}*/
 .report-request-form h3{
 	text-align: center;
 	font-weight: normal;
@@ -1231,7 +1231,8 @@ table, table td {
 		position: fixed; 
 		height: 100%;
 		width: 100%;
-		background: rgba(65, 74, 46, .4);
+		background: rgba(46, 50, 38, .44);
+		/*background: rgba(65, 74, 46, .4);*/
 		z-index: 100;
 		display: none;
 		top: 0;
