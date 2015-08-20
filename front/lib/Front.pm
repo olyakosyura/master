@@ -10,6 +10,7 @@ my %access_rules = (
     '/orders'    => 'user',
     '/manage'    => 'manager',
     '/users'     => 'admin',
+    '/about'     => 'user',
 );
 
 # This method will run once at server start
@@ -81,6 +82,7 @@ sub startup {
     $any->get('/')->to("builder#index");
     $any->get('/login')->to("builder#login");
     $any->get('/register')->to("builder#register");
+    $any->get('/about')->to("builder#about");
     $auth->get('/orders')->to("builder#orders");
     $auth->get('/track')->to("builder#track");
     $auth->get('/cargo')->to("builder#cargo");

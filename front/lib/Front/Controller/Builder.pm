@@ -50,6 +50,11 @@ sub register {
     return $self->render(template => 'base/reg');
 }
 
+sub about {
+    my $self = shift;
+    return $self->render(template => 'base/about');
+}
+
 sub login {
     my $self = shift;
 
