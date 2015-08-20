@@ -46,12 +46,28 @@
 					<div class="block">
 						<div class="grid_8">
 							<div class="grid-inner">
-							<h2>Hello There!</h2>
-								<div class="wrapper">
-									<figure class="img-indent"><img src="<%= $general_url %>/images/image1.jpg" alt=""></figure>
-									Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-								</div>
-		<p class="pad">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa.</p>
+							<h3>Cargo</h3>
+<div class="table-1" style="margin-top: 2em;">
+    <form>
+        <table id="cargo-table">
+            <thead>
+                <tr>
+                    <th>Cargo name</th>
+                    <th>Cargo cost</th>
+                </tr>
+            </thead>
+            <tbody>
+% for my $c (@$cargo) {
+                <tr>
+                    <td><%= $c->{name} %></td>
+                    <td><%= $c->{cost} %></td>
+                <tr>
+% }
+            </tbody>
+        </table>
+    </form>
+</div>
+							
 							</div>
 						</div>
 						<div class="grid_4">
