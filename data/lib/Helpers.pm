@@ -16,7 +16,7 @@ sub check_params {
     my $p = $self->req->params->to_hash;
     for (@_) {
         $params{$_} = $p->{$_};
-        return $self->render(status => 400, json => { error => sprintf "%s field is required", ucfirst }) && undef unless $params{$_};
+        return $self->render(status => 400, json => { error => sprintf "%s field is required", ucfirst }) && undef unless defined $params{$_};
     }
 
     return \%params;

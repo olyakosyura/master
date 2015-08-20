@@ -18,9 +18,9 @@ function do_filter() {
     });
 }
 
-function modify(id, sel) {
+function modify(id, sel, closed) {
     var $i = $(sel),
-        newv = window.prompt('Modify order status', $i.text());
+        newv = closed ? "Delivered" : window.prompt('Modify order status', $i.text());
     if (newv == undefined)
         return;
     if (newv.trim() == "") {
@@ -28,18 +28,25 @@ function modify(id, sel) {
         return;
     }
 
-    $i.text(newv);
     $.ajax({
         method: 'get',
         url: '<%= $general_url %>/cgi-bin/change_order_state',
         data: {
             order_id: id,
             state: newv,
+            close: closed || 0,
         },
-        success: function () {
-            alert("Successfully changed");
+        success: function (data) {
+            data = data.data;
+            $i.text(data.status);
+            if (data.closed == "1")
+                $i.parent().children(".with-buttons").html('');
         },
     });
+}
+
+function do_close(id, sel) {
+    return modify(id, sel, 1);
 }
 % end
 
@@ -68,6 +75,7 @@ function modify(id, sel) {
                     <th>Cost</th>
                     <th>Status</th>
                     <th>&nbsp;</th>
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
@@ -86,7 +94,13 @@ function modify(id, sel) {
                     <td><%= $o->{quantity} %></td>
                     <td><%= $o->{cost} %></td>
                     <td id="<%= $c %>"><%= $o->{status} %></td>
-                    <td><a href="#" onclick="modify(<%= $o->{id} %>, '#<%= $c %>'); return false;">Change state</a></td>
+%   unless ($o->{closed}) {
+                    <td class="with-buttons"><a href="#" onclick="modify(<%= $o->{id} %>, '#<%= $c %>'); return false;">Change state</a></td>
+                    <td class="with-buttons"><a href="#" onclick="do_close(<%= $o->{id} %>, '#<%= $c %>'); return false;">Close</a></td>
+%   } else {
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+%   }
                 </tr>
 % }
 %= javascript begin

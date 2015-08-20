@@ -27,9 +27,24 @@ sub orders {
         @args = ($id);
     }
 
-    return select_all($self, sprintf(q/select u.login as login, o.id as id, c.name as cargo, o.submit_date, o.departure, o.destination, o.quantity,
-        (o.quantity * c.cost) as cost, o.status from orders o join cargo c on c.id = o.cargo_id
-        join users u on u.id = o.uid%s order by o.submit_date/, $whr), @args);
+    return select_all($self, sprintf(q/
+            select
+                u.login as login,
+                o.id as id,
+                c.name as cargo,
+                o.submit_date,
+                o.closed,
+                o.departure,
+                o.destination,
+                o.quantity,
+                (o.quantity * c.cost) as cost,
+                o.status
+            from orders o
+            join cargo c on c.id = o.cargo_id
+            join users u on u.id = o.uid
+            %s
+            order by o.submit_date
+        /, $whr), @args);
 }
 
 sub list {
@@ -59,10 +74,15 @@ sub add_order {
 sub change_state {
     my $self = shift;
 
-    my $params = check_params $self, qw( order_id state );
+    my $params = check_params $self, qw( order_id state close );
     return unless $params;
 
-    execute_query $self, q/update orders set status = ? where id = ?/, @$params{qw(state order_id)};
+    if ($params->{close}) {
+        $params->{state} = "Delivered";
+    }
+
+    execute_query $self, q/insert into orders_history(order_id, old_status) select id, status from orders where id = ?/, $params->{order_id};
+    execute_query $self, q/update orders set closed = ?, status = ? where id = ?/, ($params->{close} ? 1 : 0), @$params{qw(state order_id)};
     return $self->render(json => { data => ($self->orders(undef, $params->{order_id}) || [])->[0] });
 }
 
