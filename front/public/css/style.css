@@ -153,9 +153,9 @@ header{
 		padding-top: 40px;
 	}
 	.inner {
-		background: #edf0f6;
-		border-top: 3px solid #fcfcfd;
-		border-bottom: 3px solid #fcfcfd;
+		background: #aaa;
+		border-top: 3px solid #aaa;
+		border-bottom: 3px solid #aaa;
 		padding-bottom: 44px;
 	}
 	.block {
@@ -588,7 +588,7 @@ section article {
 .intro-sign-in h6 {
     text-align: center;
     font-size: 1.25em;
-    color: #646B55;
+    color: #fff;
     padding-bottom: 3.25em;
     font-weight: normal;
     letter-spacing: 0.05em;
@@ -605,7 +605,7 @@ section article {
 
 .intro-sign-in .row-input label {
     display: block;
-    color: #414A2E;
+    color: #fff;
     font-weight: bold;
     font-size: 1.3em;
     padding: 0 0 0.15em 0.2em;
@@ -696,7 +696,7 @@ tr {
 }
 
 .table-1 thead th {
-    background-color: #000;
+    background-color: #aaa;
     border: 1px solid #414A2E;
     padding: 1.5em 0.4em;
     text-align: left;
