@@ -46,7 +46,7 @@
 					<div class="block">
 						<div class="grid_8">
 							<div class="grid-inner">
-							<h2>Hello There!</h2>
+							<h2>Our company</h2>
 								<div class="wrapper">
 									<figure class="img-indent"><img src="<%= $general_url %>/images/image1.jpg" alt=""></figure>
 									Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
@@ -55,9 +55,11 @@
 							</div>
 						</div>
 						<div class="grid_4">
-							<h2>Testimonials</h2>
+								<h2>Contacts</h2>
 							<div class="testimonial-block">
-								<em>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam, quis nostrud.</em><p><strong>— Patrick Pool, Romonson</strong></p>
+								<em> 123 Mold Road <br>Wrexham <br>   LL113AT<br>    Tel: 07890 123456</em><p><strong>— J.W Couriers</strong></p>
+						
+    
 							</div>
 						</div>
 					</div>
