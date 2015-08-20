@@ -20,15 +20,11 @@
                   	<tbody>
 % my @order = qw( login password role name lastname email );
 % my %roles = ( admin => 'Admin', manager => 'Manager', user => 'User' );
-% for my $u (@{stash 'users'}) 
-	{
+% for my $u (@{stash 'users'}) {
         	<tr>
-		% for (@order) 
-		{
+		% for (@order){
 			<td><%= $_ eq 'role' ? $roles{$u->{$_}} : $u->{$_} %></td>
-			% 
-		}
-	}
+		% }}
                   	</tbody>
               		</table>
               		<!-- /table -->
