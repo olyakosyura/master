@@ -62,7 +62,7 @@ sub orders {
         method => 'get',
         url => 'orders',
         port => DATA_PORT,
-        args => { user_id => $self->stash('uid') },
+        args => { user_id => $self->stash('uid'), long => 1 },
     );
     return $self->render(status => 500) unless $res;
     $self->stash(orders => $res->{orders});

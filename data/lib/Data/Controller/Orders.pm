@@ -52,8 +52,47 @@ sub list {
 
     my $args = $self->req->params->to_hash;
 
-    my $r = $self->orders($args->{all_users} ? undef : $args->{user_id}) || [];
-    return $self->render(json => { count => scalar @$r, orders => $r });
+    if ($args->{long}) {
+        return $self->render(json => {error => 'user_id is required'}) unless defined $args->{user_id};
+        my $r = select_all $self, q/
+            select
+                h.change_time,
+                h.old_status,
+                u.login as login,
+                o.id as id,
+                c.name as cargo,
+                o.submit_date,
+                o.closed,
+                o.departure,
+                o.destination,
+                o.quantity,
+                (o.quantity * c.cost) as cost,
+                o.status
+            from orders o
+            left outer join orders_history h on o.id = h.order_id
+            join cargo c on c.id = o.cargo_id
+            join users u on u.id = o.uid
+            where u.id = ?
+            order by h.change_time, o.submit_date
+        /, $args->{user_id};
+
+        my %orders;
+        my @fields = qw( login id cargo submit_date closed departure destination quantity cost status );
+        for my $row (@$r) {
+            unshift @{$orders{$row->{id}}{history}}, { date => $row->{change_time}, status => $row->{old_status} } if defined $row->{change_time};
+            @{$orders{$row->{id}}}{@fields} = @$row{@fields};
+        }
+
+        for my $k (sort keys %orders) {
+            unshift @{$orders{$k}{history}}, { date => $orders{$k}{submit_date}, status => $orders{$k}{status} };
+            delete @{$orders{$k}}{qw( status submit_date )};
+            $orders{$k}{history_len} = scalar @{$orders{$k}{history}};
+        }
+        return $self->render(json => { count => scalar(keys %orders), orders => [ map { $orders{$_} } sort { $b <=> $a } keys %orders ] });
+    } else {
+        my $r = $self->orders($args->{all_users} ? undef : $args->{user_id}) || [];
+        return $self->render(json => { count => scalar @$r, orders => $r });
+    }
 }
 
 sub add_order {

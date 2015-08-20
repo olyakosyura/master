@@ -71,27 +71,32 @@ function make_order() {
                 <tr>
                     <th>Order id</th>
                     <th>Cargo</th>
-                    <th>Date</th>
                     <th>Departure</th>
                     <th>Destination</th>
                     <th>Quantity</th>
                     <th>Cost</th>
+                    <th>Date</th>
                     <th>Status</th>
                 </tr>
             </thead>
             <tbody>
 
 % for my $o (@$orders) {
+% my $s = "rowspan=\"$o->{history_len}\"";
                 <tr>
-                    <td><%= $o->{id} %></td>
-                    <td><%= $o->{cargo} %></td>
-                    <td><%= $o->{submit_date} %></td>
-                    <td><%= $o->{departure} %></td>
-                    <td><%= $o->{destination} %></td>
-                    <td><%= $o->{quantity} %></td>
-                    <td><%= $o->{cost} %></td>
-                    <td><%= $o->{status} %></td>
+                    <td <%== $s %>><%= $o->{id} %></td>
+                    <td <%== $s %>><%= $o->{cargo} %></td>
+                    <td <%== $s %>><%= $o->{departure} %></td>
+                    <td <%== $s %>><%= $o->{destination} %></td>
+                    <td <%== $s %>><%= $o->{quantity} %></td>
+                    <td <%== $s %>><%= $o->{cost} %></td>
+% my $started = 0;
+% for my $h (@{$o->{history}}) {
+                <%= $started ? "<tr>" : "" %>
+                    <td><%= $h->{date} %></td>
+                    <td><%= $h->{status} %></td>
                 </tr>
+% }
 % }
             </tbody>
         </table>
