@@ -4,50 +4,36 @@
      <article>
             <h6>Registration</h6>
             <form id="frm-login" onkeypress="usl(event)">
-        	<!-- table-1 -->
-			<div class="table-1" style="margin-top: 2em;">
-	 			<form>
-        		<!-- table -->
-              		<table>
-                  	<thead>
-                    		<th>Login</th>
-                    		<th>Password</th>
-                    		<th>Role</th>
-                    		<th>Name</th>
-                    		<th>Last Name</th>
-                    		<th>Email</th>
-                  	</thead>
-                  	<tbody>
-% my @order = qw( login password role name lastname email );
-% my %roles = ( admin => 'Admin', manager => 'Manager', user => 'User' );
-% for my $u (@{stash 'users'}) {
-        	<tr>
-		% for (@order){
-			<td><%= $_ eq 'role' ? $roles{$u->{$_}} : $u->{$_} %></td>
-		% }}
-                  	</tbody>
-              		</table>
-              		<!-- /table -->
-              		
-              	<!-- не поняла что это за кнопки. Если они не нужны(а они скорее всего не нужны) - выпили -->
-              	<div class="row-button1">
-                  <div class="col-right">
-                     <a href="#" >
-                       <label class="file_upload" >
-                          <span>загрузить</span>
-                          <input type="file">
-                      </label>
-                     </a>
-                  </div>
-                  <div class="col-left">
-                     <a href="#" data-reveal-id="modal-upload"><input type="button" value="Выгрузить"></a>
-                  </div>
-              </div>
-              <!-- Вот до этого момента  -->
-              	
-            </form>
-        </div>
-       <!-- /table-1 -->
+                <div class="row-input">
+                   
+		    <div class="col-left">
+                        <label for="intro-login" id="intro-login">Name</label>
+                        <input name="intro-login" type="text">
+                    </div>
+                    <div class="col-right">
+                        <label for="intro-password" id="intro-password">Surname</label>
+                        <input name="intro-password" type="password">
+                    </div>
+                    <br>
+                    <div class="col-left">
+                        <label for="intro-login" id="intro-login">Login</label>
+                        <input name="intro-login" type="text">
+                    </div>
+                    <div class="col-right">
+                        <label for="intro-password" id="intro-password">Password</label>
+                        <input name="intro-password" type="password">
+                    </div>
+		    <br>
+		    <div class="col-left">
+                        <label for="intro-login" id="intro-login">Email</label>
+                        <input name="intro-login" type="text">
+                    </div>
+                    <div class="col-right">
+                        <label for="intro-password" id="intro-password">Role</label>
+                        <input name="intro-password" type="password">
+                    </div>
+       	            
+                </div>
 %= javascript begin
                     function usl(e) { if(e.keyCode == 13) login(); }
                     function login() {
@@ -106,4 +92,3 @@
  </div>
 </div>
 <!--========== /modal-enter ==========-->
-
