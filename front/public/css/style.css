@@ -696,8 +696,8 @@ tr {
 }
 
 .table-1 thead th {
-    background-color: #E0E1DD;
-    border: 1px solid #343434;
+    background-color: #000;
+    border: 1px solid #414A2E;
     padding: 1.5em 0.4em;
     text-align: left;
     padding-bottom: 0.5em;
@@ -706,7 +706,7 @@ tr {
 }
 
 .table-1 td {
-    border: 1px solid #343434;
+    border: 1px solid #414A2E;
     padding-top: 0.6em;
     padding-bottom: 0.6em;
     padding-left: 0.4em;
