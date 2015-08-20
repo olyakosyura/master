@@ -10,7 +10,7 @@ body {
 	font-family: 'Lato', sans-serif;
 	font-size:16px; 
 	line-height:1.375em;
-	color:#343434;
+	color:#fff;
 	min-width:1000px;
 	background: url('../images/body-bg.gif') top center repeat;
 }
@@ -328,10 +328,10 @@ header{
 }
 	.list li a {
 		text-decoration: none;
-		color: #343434;
+		color: #f00;
 	}
 		.list li a:hover {
-			color: #d52d00
+			color: #fff
 		}
 
 
@@ -393,10 +393,10 @@ iframe {
 	}
 		.news a {
 			text-decoration: none;
-			color: #343434;
+			color: #f00;
 		}
 			.news a:hover {
-				color: #d52d00;;
+				color: #fff;;
 			}
 
 .null {
@@ -436,11 +436,11 @@ iframe {
 		font-size: 15px;
 	}
 	 .post .info a{
-	 	color: #343434;
+	 	color: #f00;
 	 	text-decoration: none;
 	 }
 	 	.post .info a:hover {
-	 		color: #d52d00;
+	 		color: #fff;
 	 	}
 
 .comments {
@@ -697,7 +697,7 @@ tr {
 
 .table-1 thead th {
     background-color: #E0E1DD;
-    border: 1px solid #89c211;
+    border: 1px solid #343434;
     padding: 1.5em 0.4em;
     text-align: left;
     padding-bottom: 0.5em;
@@ -706,7 +706,7 @@ tr {
 }
 
 .table-1 td {
-    border: 1px solid #89c211;
+    border: 1px solid #343434;
     padding-top: 0.6em;
     padding-bottom: 0.6em;
     padding-left: 0.4em;
