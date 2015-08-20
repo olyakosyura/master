@@ -99,15 +99,13 @@ sub startup {
         my $page_name = $self->param('any');
 
         my $args = $self->req->params->to_hash;
-        if ($page_name eq 'build') {
-            @$args{qw( name lastname )} = ($self->stash('name'), $self->stash('lastname'));
-        }
+        @$args{qw( name lastname user_id )} = ($self->stash('name'), $self->stash('lastname'), $self->stash('uid'));
 
         my $response = send_request($self,
             method => $self->req->method,
             url => $page_name,
             port => DATA_PORT,
-            args => $self->req->params->to_hash,
+            args => $args,
             data => $self->req->body,
             headers => { Referer => $self->req->headers->referrer, },
         );

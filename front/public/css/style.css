@@ -134,7 +134,7 @@ header{
 			}
 				.menu li {
 					float: left;
-					padding: 0 20px 0 26px;
+					padding: 0 15px 0 26px;
 				}
 					.menu li a {
 						color: #999;
@@ -658,4 +658,64 @@ section article {
     -moz-transition: all 0.2s 0.2s ease;
     -o-transition: all 0.2s 0.2s ease;
     -webkit-transition: all 0.2s 0.2s ease;
+}
+
+.content {
+    position: relative;
+    padding: 0 0 106px 0;
+}
+
+.table-1 {
+    padding: 0 2.2em 0 2.06em;
+}
+
+.table-1 table {
+    margin-bottom: 3.8em;
+}
+
+table, table td {
+    padding: 0;
+    border: none;
+    border-collapse: collapse;
+}
+
+table {
+    width: 100%;
+}
+
+thead {
+    display: table-header-group;
+    vertical-align: middle;
+    border-color: inherit;
+}
+
+tr {
+    display: table-row;
+    vertical-align: inherit;
+    border-color: inherit;
+}
+
+.table-1 thead th {
+    background-color: #E0E1DD;
+    border: 1px solid #89c211;
+    padding: 1.5em 0.4em;
+    text-align: left;
+    padding-bottom: 0.5em;
+    vertical-align: middle;
+    line-height: 1.2em;
+}
+
+.table-1 td {
+    border: 1px solid #89c211;
+    padding-top: 0.6em;
+    padding-bottom: 0.6em;
+    padding-left: 0.4em;
+    vertical-align: middle;
+    line-height: 1.4em;
+}
+
+div#content {
+    padding: 1em 1.85em 0em 1.7em;
+    max-width: 1000px;
+    margin: 0 auto;
 }

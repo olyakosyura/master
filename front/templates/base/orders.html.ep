@@ -1,1 +1,132 @@
 % layout 'index';
+
+%= javascript begin
+function make_order() {
+    var q = $("#intro-count").val(),
+        from = $("#intro-departure").val(),
+        to = $("#intro-destination").val(),
+        cargo = $("#cargo").val();
+
+    if (cargo == -1) {
+        alert("Select a cargo to continue");
+        return;
+    }
+    if (String(Number(q)) != q) {
+        alert("Only numbers are allowed in a quantity field");
+        return;
+    }
+    if (from.trim().length == 0 || to.trim().length == 0) {
+        alert("Destination and Departure should be filled");
+        return;
+    }
+
+    $.ajax({
+        method: 'get',
+        url: '<%= $general_url %>/cgi-bin/add_order',
+        data: {
+            cargo: cargo,
+            dest: to,
+            depart: from,
+            count: Number(q),
+        },
+        success: function (data) {
+            if (!data || !data.data) {
+                alert("Error while add an order occur");
+                return;
+            }
+
+            data = data.data;
+
+            var $t = $("#orders tbody"),
+                $r = $("<tr>");
+
+            $("<td>").text(data.id).appendTo($r);
+            $("<td>").text(data.cargo).appendTo($r);
+            $("<td>").text(data.submit_date).appendTo($r);
+            $("<td>").text(data.departure).appendTo($r);
+            $("<td>").text(data.destination).appendTo($r);
+            $("<td>").text(data.quantity).appendTo($r);
+            $("<td>").text(data.cost).appendTo($r);
+            $("<td>").text(data.status).appendTo($r);
+
+            $r.appendTo($t);
+
+            $("#intro-count").val(''),
+            $("#intro-departure").val(''),
+            $("#intro-destination").val(''),
+            $("#cargo").val(-1).trigger('refresh');
+        },
+        error: function (data) {
+            alert("Can't add an order");
+        },
+    });
+}
+% end
+
+<section class="content">
+<div class="table-1" style="margin-top: 2em;">
+    <form>
+        <table id="orders">
+            <thead>
+                <tr>
+                    <th>Order id</th>
+                    <th>Cargo</th>
+                    <th>Date</th>
+                    <th>Departure</th>
+                    <th>Destination</th>
+                    <th>Quantity</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+
+% for my $o (@$orders) {
+                <tr>
+                    <td><%= $o->{id} %></td>
+                    <td><%= $o->{cargo} %></td>
+                    <td><%= $o->{submit_date} %></td>
+                    <td><%= $o->{departure} %></td>
+                    <td><%= $o->{destination} %></td>
+                    <td><%= $o->{quantity} %></td>
+                    <td><%= $o->{cost} %></td>
+                    <td><%= $o->{status} %></td>
+                </tr>
+% }
+            </tbody>
+        </table>
+    </form>
+</div>
+<div class="report-request-form">
+    <h3>Add new order</h3>
+    <div class="row-input">
+        <div class="col-right">
+            <label for="intro-departure">Departure point</label>
+            <input name="intro-departure" id="intro-departure" type="text">
+        </div>
+        <div class="col-right">
+            <label for="intro-destination">Destination point</label>
+            <input name="intro-destination" id="intro-destination" type="text">
+        </div>
+        <div class="col-right">
+            <label for="intro-count">Quantity</label>
+            <input name="intro-departure" id="intro-count" type="text">
+        </div>
+    </div>
+      <label for="cargo">Choose cargo</label>
+      <div>
+        <select name="cargo" id="cargo">
+          <option value="-1">Choose cargo</option>
+% for my $c (@$cargo) {
+          <option value="<%= $c->{id} %>" cost="<%= $c->{cost} %>"><%= $c->{name} %></option>
+% }
+        </select>
+      </div>
+
+    <div class="row-button">
+        <a href="#" onclick="make_order(); return false;">Submit Order</a>
+    </div>
+</div>
+</section>
+
+

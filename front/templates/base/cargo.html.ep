@@ -1,0 +1,87 @@
+% layout 'index';
+
+%= javascript begin
+function add_cargo() {
+    var name = $("#intro-name").val(),
+        cost = $("#intro-cost").val();
+
+    if (String(Number(cost)) != cost) {
+        alert("Invalid cost: only numbers allowed");
+        return;
+    }
+
+    if (name.trim().length == 0) {
+        alert("Not empty name is required");
+        return;
+    }
+
+    $.ajax({
+        url: '<%= $general_url %>/cgi-bin/add_cargo',
+        data: {
+            name: name,
+            cost: Number(cost),
+        },
+        success: function (data) {
+            if (data && data.id) {
+                var $t = $("#cargo-table tbody"),
+                    $r = $("<tr>");
+                $("<td>").text(data.id).appendTo($r);
+                $("<td>").text(data.name).appendTo($r);
+                $("<td>").text(data.cost).appendTo($r);
+                $r.appendTo($t);
+
+                $("#intro-name").val('');
+                $("#intro-cost").val('');
+            } else {
+                alert("Can't store new cargo");
+            }
+        },
+        error: function () {
+            alert("Can't store new cargo");
+        },
+    });
+}
+% end
+
+<section class="content">
+<div class="table-1" style="margin-top: 2em;">
+    <form>
+        <table id="cargo-table">
+            <thead>
+                <tr>
+                    <th>Cargo id</th>
+                    <th>Cargo name</th>
+                    <th>Cargo cost</th>
+                </tr>
+            </thead>
+            <tbody>
+% for my $c (@$cargo) {
+                <tr>
+                    <td><%= $c->{id} %></td>
+                    <td><%= $c->{name} %></td>
+                    <td><%= $c->{cost} %></td>
+                <tr>
+% }
+            </tbody>
+        </table>
+    </form>
+</div>
+<div class="report-request-form">
+    <h3>Add new cargo</h3>
+    <div class="row-input">
+        <div class="col-left">
+            <label for="intro-name">Cargo name</label>
+            <input name="intro-name" id="intro-name" type="text">
+        </div>
+        <div class="col-right">
+            <label for="intro-cost">Cargo cost</label>
+            <input name="intro-cost" id="intro-cost" type="text">
+        </div>
+    </div>
+    <div class="row-button">
+        <a href="#" onclick="add_cargo(); return false;">Add cargo</a>
+    </div>
+</div>
+</section>
+
+

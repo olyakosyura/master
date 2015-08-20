@@ -55,97 +55,31 @@ my %access_control = (
         roles  => 'admin',
     },
 
-    'districts' => {
+    'cargo' => {
         method => 'get',
         access => 'Authorized',
-        roles  => 'user',
+        roles => 'manager',
     },
 
-    'companies' => {
+    'add_cargo' => {
         method => 'get',
         access => 'Authorized',
-        roles  => 'user',
+        roles => 'manager',
     },
 
-    'company'   => {
-        method => 'get',
-        access => 'Authorized',
-        roles  => 'user',
-    },
-
-    'buildings' => {
-        method => 'get',
-        access => 'Authorized',
-        roles  => 'user',
-    },
-
-    'objects' => {
+    'orders' => {
         method => 'get',
         access => 'Authorized',
         roles => 'user',
     },
 
-    'objects/filter' => {
+    'add_order' => {
         method => 'get',
         access => 'Authorized',
         roles => 'user',
     },
 
-    'build'    => {
-        method => 'get',
-        access => 'Authorized',
-        roles  => 'user',
-    },
-
-    'xls/add_buildings' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'xls/add_content' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'xls/add_buildings_meta' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'xls/add_categories' => {
-        method => 'post',
-        access => 'Authorized',
-        roles => 'manager',
-    },
-
-    'geolocation/status' => {
-        method => 'get',
-        access => 'Authorized',
-        roles  => 'admin',
-    },
-
-    'geolocation/save' => {
-        method => 'post',
-        access => 'Authorized',
-        roles  => 'admin',
-    },
-
-    'session' => {
-        method => 'any',
-        access => 'full',
-        roles  => 'user',
-    },
-
-    'about' => {
-        method => 'get',
-        access => 'full',
-        roles => 'user',
-    },
-
-    'rebuild_cache' => {
+    'change_order_state' => {
         method => 'get',
         access => 'Authorized',
         roles => 'manager',

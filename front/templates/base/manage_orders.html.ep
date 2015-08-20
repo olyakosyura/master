@@ -1,0 +1,101 @@
+% layout 'index';
+
+%= javascript begin
+var users = [],
+    last_input = "";
+
+function do_filter() {
+    var v = $("#intro-filter").val();
+    if (last_input == v)
+        return;
+    else
+        last_input = v;
+    users.forEach(function (u) {
+        if (v == "" || u.startsWith(v))
+            $(".l-user-" + u).show();
+        else
+            $(".l-user-" + u).hide();
+    });
+}
+
+function modify(id, sel) {
+    var $i = $(sel),
+        newv = window.prompt('Modify order status', $i.text());
+    if (newv == undefined)
+        return;
+    if (newv.trim() == "") {
+        alert("Invalid status");
+        return;
+    }
+
+    $i.text(newv);
+    $.ajax({
+        method: 'get',
+        url: '<%= $general_url %>/cgi-bin/change_order_state',
+        data: {
+            order_id: id,
+            state: newv,
+        },
+        success: function () {
+            alert("Successfully changed");
+        },
+    });
+}
+% end
+
+<section class="content">
+<div class="report-request-form">
+    <h3>Filter Orders</h3>
+    <div class="row-input">
+        <div class="col-right">
+            <label for="intro-filter">Filter by user name</label>
+            <input name="intro-filter" id="intro-filter" type="text" onkeyup="do_filter()">
+        </div>
+    </div>
+</div>
+<div class="table-1" style="margin-top: 2em;">
+    <form>
+        <table id="orders">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Order id</th>
+                    <th>Cargo</th>
+                    <th>Date</th>
+                    <th>Departure</th>
+                    <th>Destination</th>
+                    <th>Quantity</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+
+% my %orders;
+% for my $o (@$orders) {
+%   $orders{$o->{login}} = 1;
+%   my $c = "l-user-$o->{login}-$o->{id}";
+                <tr class="l-user-<%= $o->{login} %>">
+                    <td><%= $o->{login} %></td>
+                    <td><%= $o->{id} %></td>
+                    <td><%= $o->{cargo} %></td>
+                    <td><%= $o->{submit_date} %></td>
+                    <td><%= $o->{departure} %></td>
+                    <td><%= $o->{destination} %></td>
+                    <td><%= $o->{quantity} %></td>
+                    <td><%= $o->{cost} %></td>
+                    <td id="<%= $c %>"><%= $o->{status} %></td>
+                    <td><a href="#" onclick="modify(<%= $o->{id} %>, '#<%= $c %>'); return false;">Change state</a></td>
+                </tr>
+% }
+%= javascript begin
+    users = [<%== join ',', map { "'$_'" } keys %orders %>];
+% end
+            </tbody>
+        </table>
+    </form>
+</div>
+</section>
+
+

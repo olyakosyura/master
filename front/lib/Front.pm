@@ -6,7 +6,9 @@ use MainConfig qw( FILES_HOST GENERAL_URL SESSION_PORT );
 
 my %access_rules = (
     '/'          => 'user',
-    '/login'     => 'user',
+    '/cargo'     => 'manager',
+    '/orders'    => 'user',
+    '/manage'    => 'manager',
 );
 
 # This method will run once at server start
@@ -77,15 +79,17 @@ sub startup {
 
     $any->get('/')->to("builder#index");
     $any->get('/login')->to("builder#login");
+    $any->get('/register')->to("builder#register");
     $auth->get('/orders')->to("builder#orders");
     $auth->get('/track')->to("builder#track");
+    $auth->get('/cargo')->to("builder#cargo");
+    $auth->get('/manage')->to("builder#manage_orders");
 
     $any->any('/*any' => { any => '' } => sub {
         my $self = shift;
         if ($self->param('any') ne 'login') {
             $self->render(status => 404);
         }
-        $self->app->log->info("TES2T");
     });
 }
 
